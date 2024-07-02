@@ -15,21 +15,14 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
-        #shiftForm, #dailyForm { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Otimizador de Máquina de Papel</h1>
         
-        <div class="form-section">
-            <h2>Selecione o tipo de entrada:</h2>
-            <button onclick="showForm('shiftForm')">Entrada Horária</button>
-            <button onclick="showForm('dailyForm')">Entrada Diária</button>
-        </div>
-
         <form id="shiftForm" class="form-section">
-            <h2>Entrada Horária</h2>
+            <h2>Entrada de Dados do Turno (8h-16h)</h2>
             <input type="date" id="shiftDay" required placeholder="Dia">
             <input type="time" id="shiftHour" required placeholder="Hora">
             <input type="text" id="productionGrade" required placeholder="Grau de Produção">
@@ -39,15 +32,15 @@
             <input type="number" id="weight" required placeholder="Peso">
             <input type="number" id="humidity" required placeholder="Umidade">
             <input type="number" id="wetPaste" required placeholder="Pasta Úmida">
-            <button type="submit">Enviar Dados Horários</button>
+            <button type="submit">Enviar Entrada</button>
         </form>
 
-        <form id="dailyForm" class="form-section">
-            <h2>Entrada Diária (Consumo de Gás do Turno 8h-16h)</h2>
-            <input type="date" id="dailyDay" required placeholder="Dia">
+        <form id="gasConsumptionForm" class="form-section">
+            <h2>Consumo de Gás do Turno (8h-16h)</h2>
+            <input type="date" id="gasDay" required placeholder="Dia">
             <input type="number" id="finalGasConsumption" required placeholder="Consumo Final de Gás">
             <input type="number" id="targetGasConsumption" required placeholder="Consumo Alvo de Gás">
-            <button type="submit">Enviar Dados Diários</button>
+            <button type="submit">Enviar Consumo de Gás</button>
         </form>
 
         <button id="viewDataBtn" style="margin-top: 20px;">Ver Todos os Dados</button>
@@ -55,18 +48,12 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI';
-
-        function showForm(formId) {
-            document.getElementById('shiftForm').style.display = 'none';
-            document.getElementById('dailyForm').style.display = 'none';
-            document.getElementById(formId).style.display = 'block';
-        }
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
 
         document.getElementById('shiftForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = {
-                type: 'shift',
+                type: 'shiftEntry',
                 day: document.getElementById('shiftDay').value,
                 hour: document.getElementById('shiftHour').value,
                 productionGrade: document.getElementById('productionGrade').value,
@@ -77,21 +64,27 @@
                 humidity: document.getElementById('humidity').value,
                 wetPaste: document.getElementById('wetPaste').value
             };
-            submitData(formData, this);
+
+            const shiftHour = parseInt(formData.hour.split(':')[0]);
+            if (shiftHour >= 8 && shiftHour < 16) {
+                sendData(formData, this);
+            } else {
+                alert('Por favor, insira apenas dados entre 8h e 16h.');
+            }
         });
 
-        document.getElementById('dailyForm').addEventListener('submit', function(e) {
+        document.getElementById('gasConsumptionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = {
-                type: 'daily',
-                day: document.getElementById('dailyDay').value,
+                type: 'gasConsumption',
+                day: document.getElementById('gasDay').value,
                 finalGasConsumption: document.getElementById('finalGasConsumption').value,
                 targetGasConsumption: document.getElementById('targetGasConsumption').value
             };
-            submitData(formData, this);
+            sendData(formData, this);
         });
 
-        function submitData(formData, form) {
+        function sendData(formData, form) {
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
