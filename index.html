@@ -55,18 +55,15 @@
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
 
-            console.log('Dados enviados:', data);
-
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                cache: 'no-cache',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data),
             })
-            .then(() => {
+            .then(response => response.json())
+            .then(result => {
                 alert('Dados enviados com sucesso!');
                 form.reset();
             })
@@ -95,13 +92,13 @@
                         container.innerHTML = '<p>Nenhum dado encontrado.</p>';
                         return;
                     }
-                    
+
                     let table = '<table border="1"><tr>';
                     for (let key in data[0]) {
                         table += `<th>${key}</th>`;
                     }
                     table += '</tr>';
-                    
+
                     data.forEach(row => {
                         table += '<tr>';
                         for (let key in row) {
@@ -109,7 +106,7 @@
                         }
                         table += '</tr>';
                     });
-                    
+
                     table += '</table>';
                     container.innerHTML = table;
                 })
@@ -121,4 +118,5 @@
     </script>
 </body>
 </html>
+
 
