@@ -55,6 +55,8 @@
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
 
+            console.log('Dados enviados:', data);
+
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -119,3 +121,4 @@
     </script>
 </body>
 </html>
+
