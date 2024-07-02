@@ -1,16 +1,21 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Otimizador de Máquina de Papel</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        input, button { margin: 5px; padding: 5px; width: 100%; }
-        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; }
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        .form-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        input, button { margin: 5px 0; padding: 8px; width: calc(100% - 16px); }
+        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; }
         button:hover { background-color: #45a049; }
-        .form-section { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        #shiftForm, #dailyForm { display: none; }
     </style>
 </head>
 <body>
@@ -18,52 +23,85 @@
         <h1>Otimizador de Máquina de Papel</h1>
         
         <div class="form-section">
-            <h2>Entrada de Dados do Turno</h2>
-            <form id="shiftForm">
-                <input type="text" id="productionGrade" name="productionGrade" required placeholder="Grau de Produção">
-                <input type="number" id="yankeeSpeed" name="yankeeSpeed" required placeholder="Velocidade do Yankee">
-                <input type="number" id="yankeePressure" name="yankeePressure" required placeholder="Pressão do Yankee">
-                <input type="number" id="hoodsTempDrySide" name="hoodsTempDrySide" required placeholder="Temp. Campânulas (Lado Seco)">
-                <input type="number" id="hoodsTempWetSide" name="hoodsTempWetSide" required placeholder="Temp. Campânulas (Lado Húmido)">
-                <input type="number" id="paperWeight" name="paperWeight" required placeholder="Gramagem">
-                <input type="number" id="humidity" name="humidity" required placeholder="Humidade">
-                <input type="number" id="wetPaste" name="wetPaste" required placeholder="Pasta Húmida">
-                <input type="hidden" name="type" value="shiftEntry">
-                <button type="submit">Enviar Dados do Turno</button>
-            </form>
+            <h2>Selecione o tipo de entrada:</h2>
+            <button onclick="showForm('shiftForm')">Entrada Horária</button>
+            <button onclick="showForm('dailyForm')">Entrada Diária</button>
         </div>
 
-        <div class="form-section">
-            <h2>Consumo de Gás do Turno</h2>
-            <form id="gasConsumptionForm">
-                <input type="date" id="gasDate" name="date" required>
-                <input type="number" id="gasConsumption" name="gasConsumption" required placeholder="Consumo de Gás Natural">
-                <input type="number" id="gasConsumptionTarget" name="gasConsumptionTarget" required placeholder="Objetivo de Consumo de Gás">
-                <input type="hidden" name="type" value="gasConsumption">
-                <button type="submit">Enviar Consumo de Gás</button>
-            </form>
-        </div>
+        <form id="shiftForm" class="form-section">
+            <h2>Entrada Horária</h2>
+            <input type="date" id="shiftDay" required placeholder="Dia">
+            <input type="time" id="shiftHour" required placeholder="Hora">
+            <input type="text" id="productionGrade" required placeholder="Grau de Produção">
+            <input type="number" id="yankeeSpeed" required placeholder="Velocidade do Yankee">
+            <input type="number" id="hoodsTempDrySide" required placeholder="Temp. Capuzes (Lado Seco)">
+            <input type="number" id="hoodsTempWetSide" required placeholder="Temp. Capuzes (Lado Úmido)">
+            <input type="number" id="weight" required placeholder="Peso">
+            <input type="number" id="humidity" required placeholder="Umidade">
+            <input type="number" id="wetPaste" required placeholder="Pasta Úmida">
+            <button type="submit">Enviar Dados Horários</button>
+        </form>
 
-        <button id="viewDataBtn">Ver Todos os Dados</button>
+        <form id="dailyForm" class="form-section">
+            <h2>Entrada Diária (Consumo de Gás do Turno 8h-16h)</h2>
+            <input type="date" id="dailyDay" required placeholder="Dia">
+            <input type="number" id="finalGasConsumption" required placeholder="Consumo Final de Gás">
+            <input type="number" id="targetGasConsumption" required placeholder="Consumo Alvo de Gás">
+            <button type="submit">Enviar Dados Diários</button>
+        </form>
+
+        <button id="viewDataBtn" style="margin-top: 20px;">Ver Todos os Dados</button>
         <div id="dataContainer"></div>
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
+        const SCRIPT_URL = 'SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI';
 
-        function sendData(form) {
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
+        function showForm(formId) {
+            document.getElementById('shiftForm').style.display = 'none';
+            document.getElementById('dailyForm').style.display = 'none';
+            document.getElementById(formId).style.display = 'block';
+        }
 
+        document.getElementById('shiftForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                type: 'shift',
+                day: document.getElementById('shiftDay').value,
+                hour: document.getElementById('shiftHour').value,
+                productionGrade: document.getElementById('productionGrade').value,
+                yankeeSpeed: document.getElementById('yankeeSpeed').value,
+                hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
+                hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
+                weight: document.getElementById('weight').value,
+                humidity: document.getElementById('humidity').value,
+                wetPaste: document.getElementById('wetPaste').value
+            };
+            submitData(formData, this);
+        });
+
+        document.getElementById('dailyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                type: 'daily',
+                day: document.getElementById('dailyDay').value,
+                finalGasConsumption: document.getElementById('finalGasConsumption').value,
+                targetGasConsumption: document.getElementById('targetGasConsumption').value
+            };
+            submitData(formData, this);
+        });
+
+        function submitData(formData, form) {
             fetch(SCRIPT_URL, {
                 method: 'POST',
+                mode: 'no-cors',
+                cache: 'no-cache',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify(formData),
             })
-            .then(response => response.json())
-            .then(result => {
+            .then(() => {
                 alert('Dados enviados com sucesso!');
                 form.reset();
             })
@@ -73,47 +111,37 @@
             });
         }
 
-        document.getElementById('shiftForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            sendData(this);
-        });
-
-        document.getElementById('gasConsumptionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            sendData(this);
-        });
-
         document.getElementById('viewDataBtn').addEventListener('click', function() {
             fetch(SCRIPT_URL)
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('dataContainer');
-                    if (data.length === 0) {
-                        container.innerHTML = '<p>Nenhum dado encontrado.</p>';
-                        return;
-                    }
-
-                    let table = '<table border="1"><tr>';
-                    for (let key in data[0]) {
-                        table += `<th>${key}</th>`;
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('dataContainer');
+                if (data.length === 0) {
+                    container.innerHTML = '<p>Nenhum dado encontrado.</p>';
+                    return;
+                }
+                
+                let table = '<table><tr>';
+                for (let key in data[0]) {
+                    table += `<th>${key}</th>`;
+                }
+                table += '</tr>';
+                
+                data.forEach(row => {
+                    table += '<tr>';
+                    for (let key in row) {
+                        table += `<td>${row[key]}</td>`;
                     }
                     table += '</tr>';
-
-                    data.forEach(row => {
-                        table += '<tr>';
-                        for (let key in row) {
-                            table += `<td>${row[key]}</td>`;
-                        }
-                        table += '</tr>';
-                    });
-
-                    table += '</table>';
-                    container.innerHTML = table;
-                })
-                .catch((error) => {
-                    console.error('Erro:', error);
-                    alert('Erro ao recuperar dados. Por favor, tente novamente.');
                 });
+                
+                table += '</table>';
+                container.innerHTML = table;
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+                alert('Erro ao recuperar dados. Por favor, tente novamente.');
+            });
         });
     </script>
 </body>
