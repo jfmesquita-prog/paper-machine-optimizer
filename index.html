@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otimizador de Máquina de Papel</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        input, button { margin: 5px; padding: 5px; width: 100%; }
+        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; }
+        button:hover { background-color: #45a049; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Otimizador de Máquina de Papel</h1>
+        <form id="shiftForm">
+            <input type="date" id="day" required placeholder="Dia">
+            <input type="time" id="hour" required placeholder="Hora">
+            <input type="text" id="productionGrade" required placeholder="Grau de Produção">
+            <input type="number" id="yankeeSpeed" required placeholder="Velocidade do Yankee">
+            <input type="number" id="hoodsTempDrySide" required placeholder="Temp. Capuzes (Lado Seco)">
+            <input type="number" id="hoodsTempWetSide" required placeholder="Temp. Capuzes (Lado Úmido)">
+            <input type="number" id="weight" required placeholder="Peso">
+            <input type="number" id="humidity" required placeholder="Umidade">
+            <input type="number" id="wetPaste" required placeholder="Pasta Úmida">
+            <input type="number" id="finalGasConsumption" required placeholder="Consumo Final de Gás">
+            <input type="number" id="targetGasConsumption" required placeholder="Consumo Alvo de Gás">
+            <button type="submit">Enviar Dados do Turno</button>
+        </form>
+        <button id="viewDataBtn" style="margin-top: 20px;">Ver Todos os Dados</button>
+        <div id="dataContainer"></div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
+
+        document.getElementById('shiftForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                day: document.getElementById('day').value,
+                hour: document.getElementById('hour').value,
+                productionGrade: document.getElementById('productionGrade').value,
+                yankeeSpeed: document.getElementById('yankeeSpeed').value,
+                hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
+                hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
+                weight: document.getElementById('weight').value,
+                humidity: document.getElementById('humidity').value,
+                wetPaste: document.getElementById('wetPaste').value,
+                finalGasConsumption: document.getElementById('finalGasConsumption').value,
+                targetGasConsumption: document.getElementById('targetGasConsumption').value
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(() => {
+                alert('Dados enviados com sucesso!');
+                this.reset();
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+                alert('Erro ao enviar dados. Por favor, tente novamente.');
+            });
+        });
+
+        document.getElementById('viewDataBtn').addEventListener('click', function() {
+            fetch(SCRIPT_URL)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('dataContainer');
+                if (data.length === 0) {
+                    container.innerHTML = '<p>Nenhum dado encontrado.</p>';
+                    return;
+                }
+                
+                let table = '<table><tr>';
+                for (let key in data[0]) {
+                    table += `<th>${key}</th>`;
+                }
+                table += '</tr>';
+                
+                data.forEach(row => {
+                    table += '<tr>';
+                    for (let key in row) {
+                        table += `<td>${row[key]}</td>`;
+                    }
+                    table += '</tr>';
+                });
+                
+                table += '</table>';
+                container.innerHTML = table;
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+                alert('Erro ao recuperar dados. Por favor, tente novamente.');
+            });
+        });
+    </script>
+</body>
+</html>
