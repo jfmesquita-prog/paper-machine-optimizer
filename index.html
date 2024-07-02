@@ -5,22 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Otimizador de Máquina de Papel</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        input, button { margin: 5px; padding: 5px; width: 100%; }
-        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; }
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        .form-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        input, button { margin: 5px 0; padding: 8px; width: calc(100% - 16px); }
+        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; }
         button:hover { background-color: #45a049; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
+        #shiftForm, #dailyForm { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Otimizador de Máquina de Papel</h1>
-        <form id="shiftForm">
-            <input type="date" id="day" required placeholder="Dia">
-            <input type="time" id="hour" required placeholder="Hora">
+        
+        <div class="form-section">
+            <h2>Selecione o tipo de entrada:</h2>
+            <button onclick="showForm('shiftForm')">Entrada Horária</button>
+            <button onclick="showForm('dailyForm')">Entrada Diária</button>
+        </div>
+
+        <form id="shiftForm" class="form-section">
+            <h2>Entrada Horária</h2>
+            <input type="date" id="shiftDay" required placeholder="Dia">
+            <input type="time" id="shiftHour" required placeholder="Hora">
             <input type="text" id="productionGrade" required placeholder="Grau de Produção">
             <input type="number" id="yankeeSpeed" required placeholder="Velocidade do Yankee">
             <input type="number" id="hoodsTempDrySide" required placeholder="Temp. Capuzes (Lado Seco)">
@@ -28,10 +39,17 @@
             <input type="number" id="weight" required placeholder="Peso">
             <input type="number" id="humidity" required placeholder="Umidade">
             <input type="number" id="wetPaste" required placeholder="Pasta Úmida">
+            <button type="submit">Enviar Dados Horários</button>
+        </form>
+
+        <form id="dailyForm" class="form-section">
+            <h2>Entrada Diária (Consumo de Gás do Turno 8h-16h)</h2>
+            <input type="date" id="dailyDay" required placeholder="Dia">
             <input type="number" id="finalGasConsumption" required placeholder="Consumo Final de Gás">
             <input type="number" id="targetGasConsumption" required placeholder="Consumo Alvo de Gás">
-            <button type="submit">Enviar Dados do Turno</button>
+            <button type="submit">Enviar Dados Diários</button>
         </form>
+
         <button id="viewDataBtn" style="margin-top: 20px;">Ver Todos os Dados</button>
         <div id="dataContainer"></div>
     </div>
@@ -39,23 +57,41 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
 
+        function showForm(formId) {
+            document.getElementById('shiftForm').style.display = 'none';
+            document.getElementById('dailyForm').style.display = 'none';
+            document.getElementById(formId).style.display = 'block';
+        }
+
         document.getElementById('shiftForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const formData = {
-                day: document.getElementById('day').value,
-                hour: document.getElementById('hour').value,
+                type: 'shift',
+                day: document.getElementById('shiftDay').value,
+                hour: document.getElementById('shiftHour').value,
                 productionGrade: document.getElementById('productionGrade').value,
                 yankeeSpeed: document.getElementById('yankeeSpeed').value,
                 hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
                 hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
                 weight: document.getElementById('weight').value,
                 humidity: document.getElementById('humidity').value,
-                wetPaste: document.getElementById('wetPaste').value,
+                wetPaste: document.getElementById('wetPaste').value
+            };
+            submitData(formData, this);
+        });
+
+        document.getElementById('dailyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                type: 'daily',
+                day: document.getElementById('dailyDay').value,
                 finalGasConsumption: document.getElementById('finalGasConsumption').value,
                 targetGasConsumption: document.getElementById('targetGasConsumption').value
             };
+            submitData(formData, this);
+        });
 
+        function submitData(formData, form) {
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -67,13 +103,13 @@
             })
             .then(() => {
                 alert('Dados enviados com sucesso!');
-                this.reset();
+                form.reset();
             })
             .catch((error) => {
                 console.error('Erro:', error);
                 alert('Erro ao enviar dados. Por favor, tente novamente.');
             });
-        });
+        }
 
         document.getElementById('viewDataBtn').addEventListener('click', function() {
             fetch(SCRIPT_URL)
@@ -110,3 +146,5 @@
     </script>
 </body>
 </html>
+
+      
