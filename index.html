@@ -11,6 +11,7 @@
         button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; }
         button:hover { background-color: #45a049; }
         .form-section { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+        #statusMessage { margin-top: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -47,6 +48,7 @@
 
         <button id="viewDataBtn">Ver Todos os Dados</button>
         <div id="dataContainer"></div>
+        <div id="statusMessage"></div>
     </div>
 
     <script>
@@ -70,12 +72,12 @@
                 body: searchParams.toString(),
             })
             .then(() => {
-                alert('Dados enviados com sucesso!');
+                document.getElementById('statusMessage').textContent = 'Dados enviados com sucesso!';
                 form.reset();
             })
             .catch((error) => {
                 console.error('Erro:', error);
-                alert('Erro ao enviar dados. Por favor, tente novamente.');
+                document.getElementById('statusMessage').textContent = 'Erro ao enviar dados. Por favor, tente novamente.';
             });
         }
 
@@ -85,7 +87,7 @@
             if (hour >= 8 && hour < 16) {
                 sendData(this);
             } else {
-                alert('Por favor, insira apenas dados entre 8h e 16h.');
+                document.getElementById('statusMessage').textContent = 'Por favor, insira apenas dados entre 8h e 16h.';
             }
         });
 
@@ -123,7 +125,7 @@
                 })
                 .catch((error) => {
                     console.error('Erro:', error);
-                    alert('Erro ao recuperar dados. Por favor, tente novamente.');
+                    document.getElementById('statusMessage').textContent = 'Erro ao recuperar dados. Por favor, tente novamente.';
                 });
         });
     </script>
