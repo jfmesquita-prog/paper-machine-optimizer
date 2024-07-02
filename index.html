@@ -1,36 +1,121 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<!-- ... (resto do HTML permanece o mesmo) ... -->
-<script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otimizador de Máquina de Papel</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        input, button { margin: 5px; padding: 5px; width: 100%; }
+        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; }
+        button:hover { background-color: #45a049; }
+        .form-section { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Otimizador de Máquina de Papel</h1>
+        
+        <div class="form-section">
+            <h2>Entrada de Dados do Turno</h2>
+            <form id="shiftForm">
+                <input type="text" id="productionGrade" name="productionGrade" required placeholder="Grau de Produção">
+                <input type="number" id="yankeeSpeed" name="yankeeSpeed" required placeholder="Velocidade do Yankee">
+                <input type="number" id="yankeePressure" name="yankeePressure" required placeholder="Pressão do Yankee">
+                <input type="number" id="hoodsTempDrySide" name="hoodsTempDrySide" required placeholder="Temp. Campânulas (Lado Seco)">
+                <input type="number" id="hoodsTempWetSide" name="hoodsTempWetSide" required placeholder="Temp. Campânulas (Lado Húmido)">
+                <input type="number" id="paperWeight" name="paperWeight" required placeholder="Gramagem">
+                <input type="number" id="humidity" name="humidity" required placeholder="Humidade">
+                <input type="number" id="wetPaste" name="wetPaste" required placeholder="Pasta Húmida">
+                <input type="hidden" name="type" value="shiftEntry">
+                <button type="submit">Enviar Dados do Turno</button>
+            </form>
+        </div>
 
-    function sendData(form) {
-        const formData = new FormData(form);
-        const data = {};
-        for (const [key, value] of formData.entries()) {
-            data[key] = value;
+        <div class="form-section">
+            <h2>Consumo de Gás do Turno</h2>
+            <form id="gasConsumptionForm">
+                <input type="date" id="gasDate" name="date" required>
+                <input type="number" id="gasConsumption" name="gasConsumption" required placeholder="Consumo de Gás Natural">
+                <input type="number" id="gasConsumptionTarget" name="gasConsumptionTarget" required placeholder="Objetivo de Consumo de Gás">
+                <input type="hidden" name="type" value="gasConsumption">
+                <button type="submit">Enviar Consumo de Gás</button>
+            </form>
+        </div>
+
+        <button id="viewDataBtn">Ver Todos os Dados</button>
+        <div id="dataContainer"></div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
+
+        function sendData(form) {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(() => {
+                alert('Dados enviados com sucesso!');
+                form.reset();
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+                alert('Erro ao enviar dados. Por favor, tente novamente.');
+            });
         }
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            cache: 'no-cache',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-        .then(() => {
-            document.getElementById('statusMessage').textContent = 'Dados enviados com sucesso!';
-            form.reset();
-        })
-        .catch((error) => {
-            console.error('Erro:', error);
-            document.getElementById('statusMessage').textContent = 'Erro ao enviar dados. Por favor, tente novamente.';
+        document.getElementById('shiftForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            sendData(this);
         });
-    }
 
-    // ... (resto do JavaScript permanece o mesmo) ...
-</script>
+        document.getElementById('gasConsumptionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            sendData(this);
+        });
+
+        document.getElementById('viewDataBtn').addEventListener('click', function() {
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('dataContainer');
+                    if (data.length === 0) {
+                        container.innerHTML = '<p>Nenhum dado encontrado.</p>';
+                        return;
+                    }
+                    
+                    let table = '<table border="1"><tr>';
+                    for (let key in data[0]) {
+                        table += `<th>${key}</th>`;
+                    }
+                    table += '</tr>';
+                    
+                    data.forEach(row => {
+                        table += '<tr>';
+                        for (let key in row) {
+                            table += `<td>${row[key]}</td>`;
+                        }
+                        table += '</tr>';
+                    });
+                    
+                    table += '</table>';
+                    container.innerHTML = table;
+                })
+                .catch((error) => {
+                    console.error('Erro:', error);
+                    alert('Erro ao recuperar dados. Por favor, tente novamente.');
+                });
+        });
+    </script>
 </body>
 </html>
