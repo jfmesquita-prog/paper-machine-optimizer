@@ -1,65 +1,137 @@
-function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  
-  Logger.log('Dados recebidos: ' + JSON.stringify(data));
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otimizador de Máquina de Papel</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        .form-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        input, button { margin: 5px 0; padding: 8px; width: calc(100% - 16px); }
+        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; }
+        button:hover { background-color: #45a049; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Otimizador de Máquina de Papel</h1>
+        
+        <div class="form-section">
+            <h2>Preenchimentos Horários</h2>
+            <form id="hourlyForm">
+                <input type="text" id="productionGrade" name="productionGrade" required placeholder="Artigo em Produção">
+                <input type="number" id="yankeeSpeed" name="yankeeSpeed" required placeholder="Velocidade do Yankee">
+                <input type="number" id="yankeePressure" name="yankeePressure" required placeholder="Pressão do Yankee">
+                <input type="number" id="hoodsTempDrySide" name="hoodsTempDrySide" required placeholder="Temperatura Campânula (Lado Seco)">
+                <input type="number" id="hoodsTempWetSide" name="hoodsTempWetSide" required placeholder="Temperatura Campânula (Lado Húmido)">
+                <input type="number" id="weight" name="weight" required placeholder="Gramagem">
+                <input type="number" id="humidity" name="humidity" required placeholder="Humidade">
+                <input type="number" id="wetPaste" name="wetPaste" required placeholder="Pasta Húmida">
+                <button type="submit">Enviar Dados Horários</button>
+            </form>
+        </div>
 
-  if (data.type === 'hourly') {
-    // Adiciona uma nova linha para entrada horária
-    var rowData = [
-      new Date(),  // Timestamp
-      data.productionGrade || '',
-      data.yankeeSpeed || '',
-      data.yankeePressure || '',
-      data.hoodsTempDrySide || '',
-      data.hoodsTempWetSide || '',
-      data.weight || '',
-      data.wetPaste || '',
-      '',  // Consumo de Gás Natural (vazio para entradas horárias)
-      ''   // Consumo Objetivo de Gás (vazio para entradas horárias)
-    ];
-    sheet.appendRow(rowData);
-    Logger.log('Nova entrada horária adicionada: ' + rowData.join(', '));
-  } else if (data.type === 'shiftEnd') {
-    // Atualiza o consumo de gás para as entradas do dia
-    var lastRow = sheet.getLastRow();
-    var dataRange = sheet.getRange(2, 1, lastRow - 1, 10);  // Assume 10 colunas
-    var values = dataRange.getValues();
-    
-    var shiftDate = new Date(data.shiftDate);
-    Logger.log('Atualizando consumo de gás para o dia: ' + shiftDate.toDateString());
+        <div class="form-section">
+            <h2>Preenchimentos de Gás do Fim de Turno</h2>
+            <form id="gasForm">
+                <input type="date" id="gasDate" name="gasDate" required placeholder="Data">
+                <input type="number" id="gasConsumption" name="gasConsumption" required placeholder="Consumo de Gás Natural">
+                <input type="number" id="targetGasConsumption" name="targetGasConsumption" required placeholder="Consumo Objetivo de Gás">
+                <button type="submit">Enviar Dados de Gás</button>
+            </form>
+        </div>
 
-    var updatedRows = 0;
-    for (var i = values.length - 1; i >= 0; i--) {
-      var rowDate = new Date(values[i][0]);
-      if (rowDate.toDateString() === shiftDate.toDateString() && values[i][8] === '') {
-        sheet.getRange(i + 2, 9, 1, 2).setValues([[data.gasConsumption, data.targetGasConsumption]]);
-        Logger.log('Consumo de gás atualizado para a linha ' + (i + 2));
-        updatedRows++;
-      }
-    }
-    Logger.log('Total de linhas atualizadas: ' + updatedRows);
-  }
+        <button id="viewDataBtn">Ver Todos os Dados</button>
+        <div id="dataContainer"></div>
+    </div>
 
-  return ContentService.createTextOutput(JSON.stringify({success: true, message: 'Operação concluída com sucesso'}))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
 
-function doGet() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = sheet.getDataRange().getValues();
-  var headers = ['Timestamp', 'Artigo em Produção', 'Velocidade do Yankee', 'Pressão do Yankee', 
-                 'Temperatura Campânula (Lado Seco)', 'Temperatura Campânula (Lado Húmido)', 
-                 'Gramagem', 'Pasta Húmida', 'Consumo de Gás Natural', 'Consumo Objetivo de Gás'];
-  
-  var jsonData = data.map(function(row) {
-    var rowData = {};
-    for (var i = 0; i < headers.length; i++) {
-      rowData[headers[i]] = row[i];
-    }
-    return rowData;
-  });
-  
-  return ContentService.createTextOutput(JSON.stringify(jsonData))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+        document.getElementById('hourlyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                type: 'hourly',
+                productionGrade: document.getElementById('productionGrade').value,
+                yankeeSpeed: document.getElementById('yankeeSpeed').value,
+                yankeePressure: document.getElementById('yankeePressure').value,
+                hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
+                hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
+                weight: document.getElementById('weight').value,
+                humidity: document.getElementById('humidity').value,
+                wetPaste: document.getElementById('wetPaste').value
+            };
+            sendData(formData, this);
+        });
+
+        document.getElementById('gasForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                type: 'gas',
+                gasDate: document.getElementById('gasDate').value,
+                gasConsumption: document.getElementById('gasConsumption').value,
+                targetGasConsumption: document.getElementById('targetGasConsumption').value
+            };
+            sendData(formData, this);
+        });
+
+        function sendData(formData, form) {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(() => {
+                alert('Dados enviados com sucesso!');
+                form.reset();
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+                alert('Erro ao enviar dados. Por favor, tente novamente.');
+            });
+        }
+
+        document.getElementById('viewDataBtn').addEventListener('click', function() {
+            fetch(SCRIPT_URL)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('dataContainer');
+                if (data.length === 0) {
+                    container.innerHTML = '<p>Nenhum dado encontrado.</p>';
+                    return;
+                }
+                
+                let table = '<table><tr>';
+                for (let key in data[0]) {
+                    table += `<th>${key}</th>`;
+                }
+                table += '</tr>';
+                
+                data.forEach(row => {
+                    table += '<tr>';
+                    for (let key in row) {
+                        table += `<td>${row[key]}</td>`;
+                    }
+                    table += '</tr>';
+                });
+                
+                table += '</table>';
+                container.innerHTML = table;
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+                alert('Erro ao recuperar dados. Por favor, tente novamente.');
+            });
+        });
+    </script>
+</body>
+</html>
