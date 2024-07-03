@@ -1,69 +1,70 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<!-- ... (cabeçalho e estilos permanecem os mesmos) ... -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Dados</title>
+</head>
 <body>
-    <div class="container">
-        <!-- ... (conteúdo HTML permanece o mesmo) ... -->
-    </div>
+    <h2>Formulário de Dados</h2>
+    <form id="dataForm">
+        <label for="artigoProducao">Artigo em Produção:</label>
+        <input type="text" id="artigoProducao" name="artigoProducao" required><br><br>
+
+        <label for="velocidadeYankee">Velocidade do Yankee:</label>
+        <input type="text" id="velocidadeYankee" name="velocidadeYankee" required><br><br>
+
+        <label for="pressaoYankee">Pressão do Yankee:</label>
+        <input type="text" id="pressaoYankee" name="pressaoYankee" required><br><br>
+
+        <label for="tempCampLadoSeco">Temperatura Campânula (Lado Seco):</label>
+        <input type="text" id="tempCampLadoSeco" name="tempCampLadoSeco" required><br><br>
+
+        <label for="tempCampLadoHumido">Temperatura Campânula (Lado Húmido):</label>
+        <input type="text" id="tempCampLadoHumido" name="tempCampLadoHumido" required><br><br>
+
+        <label for="gramagem">Gramagem:</label>
+        <input type="text" id="gramagem" name="gramagem" required><br><br>
+
+        <label for="humidade">Humidade:</label>
+        <input type="text" id="humidade" name="humidade" required><br><br>
+
+        <label for="pastaHumida">Pasta Húmida:</label>
+        <input type="text" id="pastaHumida" name="pastaHumida" required><br><br>
+
+        <input type="submit" value="Enviar">
+    </form>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
-
-        document.getElementById('hourlyForm').addEventListener('submit', function(e) {
+        const form = document.getElementById('dataForm');
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = {
-                type: 'hourly',
-                productionGrade: document.getElementById('productionGrade').value,
-                yankeeSpeed: document.getElementById('yankeeSpeed').value,
-                yankeePressure: document.getElementById('yankeePressure').value,
-                hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
-                hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
-                weight: document.getElementById('weight').value,
-                humidity: document.getElementById('humidity').value,
-                wetPaste: document.getElementById('wetPaste').value
-            };
-            sendData(formData, this);
-        });
-
-        document.getElementById('gasForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = {
-                type: 'gas',
-                gasDate: document.getElementById('gasDate').value,
-                gasConsumption: document.getElementById('gasConsumption').value,
-                targetGasConsumption: document.getElementById('targetGasConsumption').value
-            };
-            sendData(formData, this);
-        });
-
-        function sendData(formData, form) {
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                cache: 'no-cache',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                console.log('Resposta do servidor:', data);
-                alert('Dados enviados com sucesso!');
-                form.reset();
-            })
-            .catch((error) => {
-                console.error('Erro ao enviar os dados:', error);
-                alert('Erro ao enviar os dados. Por favor, tente novamente.');
+            const formData = new FormData(form);
+            const object = {};
+            formData.forEach((value, key) => {
+                object[key] = value;
             });
-        }
-
-        // ... (o resto do código JavaScript permanece o mesmo) ...
+            const url = 'https://script.google.com/macros/s/AKfycbyEXAMPLECODE/exec';
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(object)
+                });
+                if (response.ok) {
+                    alert('Dados enviados com sucesso!');
+                    form.reset();
+                } else {
+                    throw new Error('Erro ao enviar os dados.');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Ocorreu um erro ao enviar os dados.');
+            }
+        });
     </script>
 </body>
 </html>
