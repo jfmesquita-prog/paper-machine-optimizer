@@ -21,8 +21,8 @@
     <div class="container">
         <h1>Otimizador de Máquina de Papel</h1>
         
-        <form id="dataForm" class="form-section">
-            <h2>Entrada de Dados</h2>
+        <form id="hourlyForm" class="form-section">
+            <h2>Entrada de Dados Horários</h2>
             <input type="text" id="productionGrade" name="productionGrade" required placeholder="Artigo em Produção">
             <input type="number" id="yankeeSpeed" name="yankeeSpeed" required placeholder="Velocidade do Yankee">
             <input type="number" id="yankeePressure" name="yankeePressure" required placeholder="Pressão do Yankee">
@@ -30,9 +30,15 @@
             <input type="number" id="hoodsTempWetSide" name="hoodsTempWetSide" required placeholder="Temperatura Campânula (Lado Húmido)">
             <input type="number" id="weight" name="weight" required placeholder="Gramagem">
             <input type="number" id="wetPaste" name="wetPaste" required placeholder="Pasta Húmida">
+            <button type="submit">Enviar Dados Horários</button>
+        </form>
+
+        <form id="shiftEndForm" class="form-section">
+            <h2>Consumo de Gás - Final de Turno</h2>
+            <input type="date" id="shiftDate" name="shiftDate" required placeholder="Data do Turno">
             <input type="number" id="gasConsumption" name="gasConsumption" required placeholder="Consumo de Gás Natural">
             <input type="number" id="targetGasConsumption" name="targetGasConsumption" required placeholder="Consumo Objetivo de Gás">
-            <button type="submit">Enviar Dados</button>
+            <button type="submit">Enviar Dados de Consumo</button>
         </form>
 
         <button id="viewDataBtn" style="margin-top: 20px;">Ver Todos os Dados</button>
@@ -42,16 +48,26 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
 
-        document.getElementById('dataForm').addEventListener('submit', function(e) {
+        document.getElementById('hourlyForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = {
+                type: 'hourly',
                 productionGrade: document.getElementById('productionGrade').value,
                 yankeeSpeed: document.getElementById('yankeeSpeed').value,
                 yankeePressure: document.getElementById('yankeePressure').value,
                 hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
                 hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
                 weight: document.getElementById('weight').value,
-                wetPaste: document.getElementById('wetPaste').value,
+                wetPaste: document.getElementById('wetPaste').value
+            };
+            sendData(formData, this);
+        });
+
+        document.getElementById('shiftEndForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                type: 'shiftEnd',
+                shiftDate: document.getElementById('shiftDate').value,
                 gasConsumption: document.getElementById('gasConsumption').value,
                 targetGasConsumption: document.getElementById('targetGasConsumption').value
             };
