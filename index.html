@@ -19,27 +19,29 @@
         
         <div class="form-section">
             <h2>Entrada de Dados do Turno (8h-16h)</h2>
-            <form id="shiftForm">
-                <input type="date" id="shiftDay" required>
-                <input type="time" id="shiftHour" required>
-                <input type="number" id="productionGrade" required placeholder="Artigo em Produção">
-                <input type="number" id="yankeeSpeed" required placeholder="Velocidade do Yankee">
-                <input type="number" id="yankeepress" required placeholder="Pressão do Yankee">
-                <input type="number" id="hoodsTempDrySide" required placeholder="Temperatura Campânula (Lado Seco)">
-                <input type="number" id="hoodsTempWetSide" required placeholder="Temperatura Campânula (Lado Húmido)">
-                <input type="number" id="weight" required placeholder="Gramagem">
-                <input type="number" id="humidity" required placeholder="Humidade">
-                <input type="number" id="wetPaste" required placeholder="Pasta Húmida">
+            <form id="shiftForm" action="https://script.google.com/macros/s/AKfycbx94m8xqwNa9vVQZ_iN56dnkQALfoYwIWPK8ldevUeBiLmZds7j9H76Uf0CidfgyAJe/exec" method="POST">
+                <input type="hidden" name="type" value="shiftEntry">
+                <input type="date" id="shiftDay" name="day" required>
+                <input type="time" id="shiftHour" name="hour" required>
+                <input type="number" id="productionGrade" name="productionGrade" required placeholder="Artigo em Produção">
+                <input type="number" id="yankeeSpeed" name="yankeeSpeed" required placeholder="Velocidade do Yankee">
+                <input type="number" id="yankeepress" name="yankeepress" required placeholder="Pressão do Yankee">
+                <input type="number" id="hoodsTempDrySide" name="hoodsTempDrySide" required placeholder="Temperatura Campânula (Lado Seco)">
+                <input type="number" id="hoodsTempWetSide" name="hoodsTempWetSide" required placeholder="Temperatura Campânula (Lado Húmido)">
+                <input type="number" id="weight" name="weight" required placeholder="Gramagem">
+                <input type="number" id="humidity" name="humidity" required placeholder="Humidade">
+                <input type="number" id="wetPaste" name="wetPaste" required placeholder="Pasta Húmida">
                 <button type="submit">Enviar Dados do Turno</button>
             </form>
         </div>
 
         <div class="form-section">
             <h2>Consumo de Gás do Turno (8h-16h)</h2>
-            <form id="gasConsumptionForm">
-                <input type="date" id="gasDay" required>
-                <input type="number" id="finalGasConsumption" required placeholder="Consumo Final de Gás">
-                <input type="number" id="targetGasConsumption" required placeholder="Consumo Alvo de Gás">
+            <form id="gasConsumptionForm" action="https://script.google.com/macros/s/AKfycbx94m8xqwNa9vVQZ_iN56dnkQALfoYwIWPK8ldevUeBiLmZds7j9H76Uf0CidfgyAJe/exec" method="POST">
+                <input type="hidden" name="type" value="gasConsumption">
+                <input type="date" id="gasDay" name="day" required>
+                <input type="number" id="finalGasConsumption" name="finalGasConsumption" required placeholder="Consumo Final de Gás">
+                <input type="number" id="targetGasConsumption" name="targetGasConsumption" required placeholder="Consumo Alvo de Gás">
                 <button type="submit">Enviar Consumo de Gás</button>
             </form>
         </div>
@@ -48,65 +50,27 @@
         <div id="dataContainer"></div>
     </div>
 
-    <!-- Formulário invisível para submissão -->
-    <form id="hiddenForm" style="display:none;" target="hidden-iframe" method="POST" action="https://script.google.com/macros/s/AKfycbx94m8xqwNa9vVQZ_iN56dnkQALfoYwIWPK8ldevUeBiLmZds7j9H76Uf0CidfgyAJe/exec">
-        <input type="hidden" name="data" id="hiddenData">
-    </form>
-    <iframe name="hidden-iframe" style="display:none;"></iframe>
-
     <script>
         function updateDateTime() {
             const now = new Date();
-            document.getElementById('shiftDay').value = now.toISOString().split('T')[0];
-            document.getElementById('shiftHour').value = now.toTimeString().slice(0, 5);
-            document.getElementById('gasDay').value = now.toISOString().split('T')[0];
+            const shiftDay = document.getElementById('shiftDay');
+            const shiftHour = document.getElementById('shiftHour');
+            const gasDay = document.getElementById('gasDay');
+
+            if (shiftDay) shiftDay.value = now.toISOString().split('T')[0];
+            if (shiftHour) shiftHour.value = now.toTimeString().slice(0, 5);
+            if (gasDay) gasDay.value = now.toISOString().split('T')[0];
         }
 
         updateDateTime();
         setInterval(updateDateTime, 60000);
 
-        function sendData(formData) {
-            document.getElementById('hiddenData').value = JSON.stringify(formData);
-            document.getElementById('hiddenForm').submit();
-            setTimeout(() => {
-                alert('Dados enviados com sucesso!');
-                document.getElementById(formData.type === 'shiftEntry' ? 'shiftForm' : 'gasConsumptionForm').reset();
-                updateDateTime();
-            }, 1000);
-        }
-
         document.getElementById('shiftForm').addEventListener('submit', function(e) {
-            e.preventDefault();
             const hour = document.getElementById('shiftHour').value.split(':')[0];
-            if (hour >= 8 && hour < 16) {
-                const formData = {
-                    type: 'shiftEntry',
-                    day: document.getElementById('shiftDay').value,
-                    hour: document.getElementById('shiftHour').value,
-                    productionGrade: document.getElementById('productionGrade').value,
-                    yankeeSpeed: document.getElementById('yankeeSpeed').value,
-                    yankeepress: document.getElementById('yankeepress').value,
-                    hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
-                    hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
-                    weight: document.getElementById('weight').value,
-                    humidity: document.getElementById('humidity').value,
-                    wetPaste: document.getElementById('wetPaste').value
-                };
-                sendData(formData);
-            } else {
+            if (hour < 8 || hour >= 16) {
+                e.preventDefault();
                 alert('Por favor, insira apenas dados entre 8h e 16h.');
             }
-        });
-
-        document.getElementById('gasConsumptionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = {
-                type: 'gasConsumption',
-                day: document.getElementById('gasDay').value,
-                finalGasConsumption: document.getElementById('finalGasConsumption').value,
-                targetGasConsumption: document.getElementById('targetGasConsumption').value
-            };
-            sendData(formData);
         });
 
         document.getElementById('viewDataBtn').addEventListener('click', function() {
