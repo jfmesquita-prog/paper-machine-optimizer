@@ -21,24 +21,18 @@
     <div class="container">
         <h1>Otimizador de Máquina de Papel</h1>
         
-        <form id="shiftForm" class="form-section">
-            <h2>Entrada de Dados do Turno</h2>
-            <input type="text" id="productionGrade" required placeholder="Artigo em Produção">
-            <input type="number" id="yankeeSpeed" required placeholder="Velocidade do Yankee">
-            <input type="number" id="yankeePressure" required placeholder="Pressão do Yankee">
-            <input type="number" id="hoodsTempDrySide" required placeholder="Temperatura Campânula (Lado Seco)">
-            <input type="number" id="hoodsTempWetSide" required placeholder="Temperatura Campânula (Lado Húmido)">
-            <input type="number" id="weight" required placeholder="Gramagem">
-            <input type="number" id="wetPaste" required placeholder="Pasta Húmida">
-            <button type="submit">Enviar Entrada</button>
-        </form>
-
-        <form id="gasConsumptionForm" class="form-section">
-            <h2>Consumo de Gás do Turno</h2>
-            <input type="date" id="gasDay" required placeholder="Dia">
-            <input type="number" id="gasConsumption" required placeholder="Consumo de Gás Natural">
-            <input type="number" id="targetGasConsumption" required placeholder="Consumo Objetivo de Gás">
-            <button type="submit">Enviar Consumo de Gás</button>
+        <form id="dataForm" class="form-section">
+            <h2>Entrada de Dados</h2>
+            <input type="text" id="productionGrade" name="productionGrade" required placeholder="Artigo em Produção">
+            <input type="number" id="yankeeSpeed" name="yankeeSpeed" required placeholder="Velocidade do Yankee">
+            <input type="number" id="yankeePressure" name="yankeePressure" required placeholder="Pressão do Yankee">
+            <input type="number" id="hoodsTempDrySide" name="hoodsTempDrySide" required placeholder="Temperatura Campânula (Lado Seco)">
+            <input type="number" id="hoodsTempWetSide" name="hoodsTempWetSide" required placeholder="Temperatura Campânula (Lado Húmido)">
+            <input type="number" id="weight" name="weight" required placeholder="Gramagem">
+            <input type="number" id="wetPaste" name="wetPaste" required placeholder="Pasta Húmida">
+            <input type="number" id="gasConsumption" name="gasConsumption" required placeholder="Consumo de Gás Natural">
+            <input type="number" id="targetGasConsumption" name="targetGasConsumption" required placeholder="Consumo Objetivo de Gás">
+            <button type="submit">Enviar Dados</button>
         </form>
 
         <button id="viewDataBtn" style="margin-top: 20px;">Ver Todos os Dados</button>
@@ -48,26 +42,16 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
 
-        document.getElementById('shiftForm').addEventListener('submit', function(e) {
+        document.getElementById('dataForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = {
-                type: 'shiftEntry',
                 productionGrade: document.getElementById('productionGrade').value,
                 yankeeSpeed: document.getElementById('yankeeSpeed').value,
                 yankeePressure: document.getElementById('yankeePressure').value,
                 hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
                 hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
                 weight: document.getElementById('weight').value,
-                wetPaste: document.getElementById('wetPaste').value
-            };
-            sendData(formData, this);
-        });
-
-        document.getElementById('gasConsumptionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = {
-                type: 'gasConsumption',
-                day: document.getElementById('gasDay').value,
+                wetPaste: document.getElementById('wetPaste').value,
                 gasConsumption: document.getElementById('gasConsumption').value,
                 targetGasConsumption: document.getElementById('targetGasConsumption').value
             };
