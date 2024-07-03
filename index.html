@@ -22,24 +22,22 @@
         <h1>Otimizador de Máquina de Papel</h1>
         
         <form id="shiftForm" class="form-section">
-            <h2>Entrada de Dados do Turno (8h-16h)</h2>
-            <input type="date" id="day" required placeholder="Dia">
-            <input type="time" id="hour" required placeholder="Hora">
-            <input type="text" id="productionGrade" required placeholder="Grau de Produção">
+            <h2>Entrada de Dados do Turno</h2>
+            <input type="text" id="productionGrade" required placeholder="Artigo em Produção">
             <input type="number" id="yankeeSpeed" required placeholder="Velocidade do Yankee">
-            <input type="number" id="hoodsTempDrySide" required placeholder="Temp. Capuzes (Lado Seco)">
-            <input type="number" id="hoodsTempWetSide" required placeholder="Temp. Capuzes (Lado Úmido)">
-            <input type="number" id="weight" required placeholder="Peso">
-            <input type="number" id="humidity" required placeholder="Umidade">
-            <input type="number" id="wetPaste" required placeholder="Pasta Úmida">
+            <input type="number" id="yankeePressure" required placeholder="Pressão do Yankee">
+            <input type="number" id="hoodsTempDrySide" required placeholder="Temperatura Campânula (Lado Seco)">
+            <input type="number" id="hoodsTempWetSide" required placeholder="Temperatura Campânula (Lado Húmido)">
+            <input type="number" id="weight" required placeholder="Gramagem">
+            <input type="number" id="wetPaste" required placeholder="Pasta Húmida">
             <button type="submit">Enviar Entrada</button>
         </form>
 
         <form id="gasConsumptionForm" class="form-section">
-            <h2>Consumo de Gás do Turno (8h-16h)</h2>
+            <h2>Consumo de Gás do Turno</h2>
             <input type="date" id="gasDay" required placeholder="Dia">
-            <input type="number" id="finalGasConsumption" required placeholder="Consumo Final de Gás">
-            <input type="number" id="targetGasConsumption" required placeholder="Consumo Alvo de Gás">
+            <input type="number" id="gasConsumption" required placeholder="Consumo de Gás Natural">
+            <input type="number" id="targetGasConsumption" required placeholder="Consumo Objetivo de Gás">
             <button type="submit">Enviar Consumo de Gás</button>
         </form>
 
@@ -54,23 +52,15 @@
             e.preventDefault();
             const formData = {
                 type: 'shiftEntry',
-                day: document.getElementById('shiftDay').value,
-                hour: document.getElementById('shiftHour').value,
                 productionGrade: document.getElementById('productionGrade').value,
                 yankeeSpeed: document.getElementById('yankeeSpeed').value,
+                yankeePressure: document.getElementById('yankeePressure').value,
                 hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
                 hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
                 weight: document.getElementById('weight').value,
-                humidity: document.getElementById('humidity').value,
                 wetPaste: document.getElementById('wetPaste').value
             };
-
-            const shiftHour = parseInt(formData.hour.split(':')[0]);
-            if (shiftHour >= 8 && shiftHour < 16) {
-                sendData(formData, this);
-            } else {
-                alert('Por favor, insira apenas dados entre 8h e 16h.');
-            }
+            sendData(formData, this);
         });
 
         document.getElementById('gasConsumptionForm').addEventListener('submit', function(e) {
@@ -78,7 +68,7 @@
             const formData = {
                 type: 'gasConsumption',
                 day: document.getElementById('gasDay').value,
-                finalGasConsumption: document.getElementById('finalGasConsumption').value,
+                gasConsumption: document.getElementById('gasConsumption').value,
                 targetGasConsumption: document.getElementById('targetGasConsumption').value
             };
             sendData(formData, this);
@@ -139,4 +129,3 @@
     </script>
 </body>
 </html>
-
