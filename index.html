@@ -53,54 +53,37 @@
 
         function updateDateTime() {
             const now = new Date();
-            const dateInput = document.getElementById('shiftDay');
-            const timeInput = document.getElementById('shiftHour');
-            
-            // Formato YYYY-MM-DD para o input de data
-            dateInput.value = now.toISOString().split('T')[0];
-            
-            // Formato HH:MM para o input de hora
-            timeInput.value = now.toTimeString().slice(0, 5);
-
-            // Atualiza também o campo de data do formulário de consumo de gás
+            document.getElementById('shiftDay').value = now.toISOString().split('T')[0];
+            document.getElementById('shiftHour').value = now.toTimeString().slice(0, 5);
             document.getElementById('gasDay').value = now.toISOString().split('T')[0];
         }
 
-        // Atualiza data e hora quando a página carrega
         updateDateTime();
-
-        // Atualiza data e hora a cada minuto
         setInterval(updateDateTime, 60000);
 
         function sendData(formData) {
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'cors',
+                mode: 'no-cors',
                 cache: 'no-cache',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(formData),
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Resposta do servidor:', data);
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+            .then(() => {
                 alert('Dados enviados com sucesso!');
                 document.getElementById(formData.type === 'shiftEntry' ? 'shiftForm' : 'gasConsumptionForm').reset();
-                updateDateTime(); // Atualiza data e hora após envio bem-sucedido
+                updateDateTime();
             })
             .catch((error) => {
                 console.error('Erro:', error);
-                alert('Erro ao enviar dados: ' + error.message);
+                alert('Erro ao enviar dados. Por favor, tente novamente.');
             });
         }
 
         document.getElementById('shiftForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            updateDateTime(); // Atualiza data e hora antes de enviar
             const hour = document.getElementById('shiftHour').value.split(':')[0];
             if (hour >= 8 && hour < 16) {
                 const formData = {
@@ -135,30 +118,36 @@
 
         document.getElementById('viewDataBtn').addEventListener('click', function() {
             fetch(SCRIPT_URL)
-                .then(response => response.json())
+                .then(response => response.text())
                 .then(data => {
-                    const container = document.getElementById('dataContainer');
-                    if (data.length === 0) {
-                        container.innerHTML = '<p>Nenhum dado encontrado.</p>';
-                        return;
-                    }
-                    
-                    let table = '<table border="1"><tr>';
-                    for (let key in data[0]) {
-                        table += `<th>${key}</th>`;
-                    }
-                    table += '</tr>';
-                    
-                    data.forEach(row => {
-                        table += '<tr>';
-                        for (let key in row) {
-                            table += `<td>${row[key]}</td>`;
+                    try {
+                        const jsonData = JSON.parse(data);
+                        const container = document.getElementById('dataContainer');
+                        if (jsonData.length === 0) {
+                            container.innerHTML = '<p>Nenhum dado encontrado.</p>';
+                            return;
+                        }
+                        
+                        let table = '<table border="1"><tr>';
+                        for (let key in jsonData[0]) {
+                            table += `<th>${key}</th>`;
                         }
                         table += '</tr>';
-                    });
-                    
-                    table += '</table>';
-                    container.innerHTML = table;
+                        
+                        jsonData.forEach(row => {
+                            table += '<tr>';
+                            for (let key in row) {
+                                table += `<td>${row[key]}</td>`;
+                            }
+                            table += '</tr>';
+                        });
+                        
+                        table += '</table>';
+                        container.innerHTML = table;
+                    } catch (error) {
+                        console.error('Erro ao processar dados:', error);
+                        alert('Erro ao processar dados. Por favor, tente novamente.');
+                    }
                 })
                 .catch((error) => {
                     console.error('Erro:', error);
