@@ -35,36 +35,36 @@
         <input type="submit" value="Enviar">
     </form>
 
-    <script>
-        const form = document.getElementById('dataForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const object = {};
-            formData.forEach((value, key) => {
-                object[key] = value;
-            });
-            const url = 'https://script.google.com/macros/s/AKfycbyEXAMPLECODE/exec';
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(object)
-                });
-                if (response.ok) {
-                    alert('Dados enviados com sucesso!');
-                    form.reset();
-                } else {
-                    throw new Error('Erro ao enviar os dados.');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                alert('Ocorreu um erro ao enviar os dados.');
-            }
+   <script>
+    const form = document.getElementById('dataForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const object = {};
+        formData.forEach((value, key) => {
+            object[key] = value;
         });
-    </script>
+        const url = 'https://script.google.com/macros/s/AKfycbyEXAMPLECODE/exec';
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(object)
+            });
+            if (response.ok) {
+                alert('Dados enviados com sucesso!');
+                form.reset();
+            } else {
+                throw new Error('Erro ao enviar os dados.');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Ocorreu um erro ao enviar os dados.');
+        }
+    });
+</script>
 </body>
 </html>
