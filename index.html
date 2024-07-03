@@ -51,7 +51,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
 
         document.getElementById('hourlyForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -95,43 +95,5 @@
                 form.reset();
             })
             .catch((error) => {
-                console.error('Erro:', error);
-                alert('Erro ao enviar dados. Por favor, tente novamente.');
-            });
-        }
+                console.error('
 
-        document.getElementById('viewDataBtn').addEventListener('click', function() {
-            fetch(SCRIPT_URL)
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('dataContainer');
-                if (data.length === 0) {
-                    container.innerHTML = '<p>Nenhum dado encontrado.</p>';
-                    return;
-                }
-                
-                let table = '<table><tr>';
-                for (let key in data[0]) {
-                    table += `<th>${key}</th>`;
-                }
-                table += '</tr>';
-                
-                data.forEach(row => {
-                    table += '<tr>';
-                    for (let key in row) {
-                        table += `<td>${row[key]}</td>`;
-                    }
-                    table += '</tr>';
-                });
-                
-                table += '</table>';
-                container.innerHTML = table;
-            })
-            .catch((error) => {
-                console.error('Erro:', error);
-                alert('Erro ao recuperar dados. Por favor, tente novamente.');
-            });
-        });
-    </script>
-</body>
-</html>
