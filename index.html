@@ -1,31 +1,117 @@
-function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.parameter.data);
-  
-  Logger.log('Dados recebidos: ' + JSON.stringify(data));
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otimizador de Máquina de Papel</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        input, button { margin: 5px; padding: 5px; width: 100%; }
+        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; }
+        button:hover { background-color: #45a049; }
+        .form-section { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Otimizador de Máquina de Papel</h1>
+        
+        <div class="form-section">
+            <h2>Entrada de Dados do Turno (8h-16h)</h2>
+            <form id="shiftForm">
+                <input type="date" id="shiftDay" required>
+                <input type="time" id="shiftHour" required>
+                <input type="number" id="productionGrade" required placeholder="Artigo em Produção">
+                <input type="number" id="yankeeSpeed" required placeholder="Velocidade do Yankee">
+                <input type="number" id="yankeepress" required placeholder="Pressão do Yankee">
+                <input type="number" id="hoodsTempDrySide" required placeholder="Temperatura Campânula (Lado Seco)">
+                <input type="number" id="hoodsTempWetSide" required placeholder="Temperatura Campânula (Lado Húmido)">
+                <input type="number" id="weight" required placeholder="Gramagem">
+                <input type="number" id="humidity" required placeholder="Humidade">
+                <input type="number" id="wetPaste" required placeholder="Pasta Húmida">
+                <button type="submit">Enviar Dados do Turno</button>
+            </form>
+        </div>
 
-  if (data.type === 'shiftEntry') {
-    // ... (resto do código para inserção de dados do turno)
-  } else if (data.type === 'gasConsumption') {
-    // ... (resto do código para inserção de dados de consumo de gás)
-  }
+        <div class="form-section">
+            <h2>Consumo de Gás do Turno (8h-16h)</h2>
+            <form id="gasConsumptionForm">
+                <input type="date" id="gasDay" required>
+                <input type="number" id="finalGasConsumption" required placeholder="Consumo Final de Gás">
+                <input type="number" id="targetGasConsumption" required placeholder="Consumo Alvo de Gás">
+                <button type="submit">Enviar Consumo de Gás</button>
+            </form>
+        </div>
 
-  return ContentService.createTextOutput('Sucesso!');
-}
+        <button id="viewDataBtn">Ver Todos os Dados</button>
+        <div id="dataContainer"></div>
+    </div>
 
-function doGet() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = sheet.getDataRange().getValues();
-  var headers = data.shift();
-  
-  var jsonData = data.map(function(row) {
-    var rowData = {};
-    for (var i = 0; i < headers.length; i++) {
-      rowData[headers[i]] = row[i];
-    }
-    return rowData;
-  });
-  
-  return ContentService.createTextOutput(JSON.stringify(jsonData))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+    <!-- Formulário invisível para submissão -->
+    <form id="hiddenForm" style="display:none;" target="hidden-iframe" method="POST" action="https://script.google.com/macros/s/AKfycbx94m8xqwNa9vVQZ_iN56dnkQALfoYwIWPK8ldevUeBiLmZds7j9H76Uf0CidfgyAJe/exec">
+        <input type="hidden" name="data" id="hiddenData">
+    </form>
+    <iframe name="hidden-iframe" style="display:none;"></iframe>
+
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('shiftDay').value = now.toISOString().split('T')[0];
+            document.getElementById('shiftHour').value = now.toTimeString().slice(0, 5);
+            document.getElementById('gasDay').value = now.toISOString().split('T')[0];
+        }
+
+        updateDateTime();
+        setInterval(updateDateTime, 60000);
+
+        function sendData(formData) {
+            document.getElementById('hiddenData').value = JSON.stringify(formData);
+            document.getElementById('hiddenForm').submit();
+            setTimeout(() => {
+                alert('Dados enviados com sucesso!');
+                document.getElementById(formData.type === 'shiftEntry' ? 'shiftForm' : 'gasConsumptionForm').reset();
+                updateDateTime();
+            }, 1000);
+        }
+
+        document.getElementById('shiftForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const hour = document.getElementById('shiftHour').value.split(':')[0];
+            if (hour >= 8 && hour < 16) {
+                const formData = {
+                    type: 'shiftEntry',
+                    day: document.getElementById('shiftDay').value,
+                    hour: document.getElementById('shiftHour').value,
+                    productionGrade: document.getElementById('productionGrade').value,
+                    yankeeSpeed: document.getElementById('yankeeSpeed').value,
+                    yankeepress: document.getElementById('yankeepress').value,
+                    hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
+                    hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
+                    weight: document.getElementById('weight').value,
+                    humidity: document.getElementById('humidity').value,
+                    wetPaste: document.getElementById('wetPaste').value
+                };
+                sendData(formData);
+            } else {
+                alert('Por favor, insira apenas dados entre 8h e 16h.');
+            }
+        });
+
+        document.getElementById('gasConsumptionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                type: 'gasConsumption',
+                day: document.getElementById('gasDay').value,
+                finalGasConsumption: document.getElementById('finalGasConsumption').value,
+                targetGasConsumption: document.getElementById('targetGasConsumption').value
+            };
+            sendData(formData);
+        });
+
+        document.getElementById('viewDataBtn').addEventListener('click', function() {
+            window.open('https://script.google.com/macros/s/AKfycbx94m8xqwNa9vVQZ_iN56dnkQALfoYwIWPK8ldevUeBiLmZds7j9H76Uf0CidfgyAJe/exec', '_blank');
+        });
+    </script>
+</body>
+</html>
