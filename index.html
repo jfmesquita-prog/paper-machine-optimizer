@@ -53,13 +53,9 @@
     <script>
         function updateDateTime() {
             const now = new Date();
-            const shiftDay = document.getElementById('shiftDay');
-            const shiftHour = document.getElementById('shiftHour');
-            const gasDay = document.getElementById('gasDay');
-
-            if (shiftDay) shiftDay.value = now.toISOString().split('T')[0];
-            if (shiftHour) shiftHour.value = now.toTimeString().slice(0, 5);
-            if (gasDay) gasDay.value = now.toISOString().split('T')[0];
+            document.getElementById('shiftDay').value = now.toISOString().split('T')[0];
+            document.getElementById('shiftHour').value = now.toTimeString().slice(0, 5);
+            document.getElementById('gasDay').value = now.toISOString().split('T')[0];
         }
 
         updateDateTime();
