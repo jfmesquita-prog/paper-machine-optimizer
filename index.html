@@ -20,9 +20,10 @@
         <div class="form-section">
             <h2>Entrada de Dados do Turno (8h-16h)</h2>
             <form id="shiftForm">
+                <input type="date" id="shiftDay" required placeholder="Dia">
+                <input type="time" id="shiftHour" required placeholder="Hora">
                 <input type="text" id="productionGrade" required placeholder="Grau de Produção">
                 <input type="number" id="yankeeSpeed" required placeholder="Velocidade do Yankee">
-                <input type="number" id="yankeepress" required placeholder="Pressão do Yankee">
                 <input type="number" id="hoodsTempDrySide" required placeholder="Temp. Capuzes (Lado Seco)">
                 <input type="number" id="hoodsTempWetSide" required placeholder="Temp. Capuzes (Lado Úmido)">
                 <input type="number" id="weight" required placeholder="Peso">
@@ -75,9 +76,10 @@
             if (hour >= 8 && hour < 16) {
                 const formData = {
                     type: 'shiftEntry',
+                    day: document.getElementById('shiftDay').value,
+                    hour: document.getElementById('shiftHour').value,
                     productionGrade: document.getElementById('productionGrade').value,
                     yankeeSpeed: document.getElementById('yankeeSpeed').value,
-                    yankeepress: document.getElementById('yankeepress').value,
                     hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
                     hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
                     weight: document.getElementById('weight').value,
@@ -136,4 +138,3 @@
     </script>
 </body>
 </html>
-
