@@ -49,29 +49,59 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyj7mMINAD4FkiJ76dMWMAkmJToyhXrjfMAAO8mPso-eIUBWIkkkDSTEdNzBwBdEJnp/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/SEU_ID_DE_IMPLANTACAO_AQUI/exec';
 
-function sendData(formData) {
-    console.log('Enviando dados:', formData);
-    fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        cache: 'no-cache',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-    })
-    .then(() => {
-        console.log('Dados enviados com sucesso');
-        alert('Dados enviados com sucesso!');
-        document.getElementById(formData.type === 'shiftEntry' ? 'shiftForm' : 'gasConsumptionForm').reset();
-    })
-    .catch((error) => {
-        console.error('Erro ao enviar dados:', error);
-        alert('Erro ao enviar dados. Por favor, tente novamente.');
-    });
-}
+        function sendData(formData) {
+            console.log('Enviando dados:', formData);
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => {
+                console.log('Resposta recebida:', response);
+                if (!response.ok) {
+                    throw new Error('Resposta da rede não foi ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                console.log('Dados da resposta:', data);
+                alert('Dados enviados com sucesso!');
+                document.getElementById(formData.type === 'shiftEntry' ? 'shiftForm' : 'gasConsumptionForm').reset();
+            })
+            .catch((error) => {
+                console.error('Erro detalhado:', error);
+                alert('Erro ao enviar dados. Por favor, tente novamente.');
+            });
+        }
+
+        document.getElementById('shiftForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const hour = document.getElementById('shiftHour').value.split(':')[0];
+            if (hour >= 8 && hour < 16) {
+                const formData = {
+                    type: 'shiftEntry',
+                    day: document.getElementById('shiftDay').value,
+                    hour: document.getElementById('shiftHour').value,
+                    productionGrade: document.getElementById('productionGrade').value,
+                    yankeeSpeed: document.getElementById('yankeeSpeed').value,
+                    yankeepress: document.getElementById('yankeepress').value,
+                    hoodsTempDrySide: document.getElementById('hoodsTempDrySide').value,
+                    hoodsTempWetSide: document.getElementById('hoodsTempWetSide').value,
+                    weight: document.getElementById('weight').value,
+                    humidity: document.getElementById('humidity').value,
+                    wetPaste: document.getElementById('wetPaste').value
+                };
+                sendData(formData);
+            } else {
+                alert('Por favor, insira apenas dados entre 8h e 16h.');
+            }
+        });
 
         document.getElementById('gasConsumptionForm').addEventListener('submit', function(e) {
             e.preventDefault();
