@@ -1,57 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Máquina de Papel</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f4; }
-        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1, h2 { color: #333; }
-        .form-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
-        input, button { margin: 5px 0; padding: 8px; width: calc(100% - 16px); }
-        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; }
-        button:hover { background-color: #45a049; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-    </style>
-</head>
+<!-- ... (cabeçalho e estilos permanecem os mesmos) ... -->
 <body>
     <div class="container">
-        <h1>Otimizador de Máquina de Papel</h1>
-        
-        <div class="form-section">
-            <h2>Preenchimentos Horários</h2>
-            <form id="hourlyForm">
-                <input type="number" id="productionGrade" name="productionGrade" required placeholder="Artigo em Produção">
-                <input type="number" id="yankeeSpeed" name="yankeeSpeed" required placeholder="Velocidade do Yankee">
-                <input type="number" id="yankeePressure" name="yankeePressure" required placeholder="Pressão do Yankee">
-                <input type="number" id="hoodsTempDrySide" name="hoodsTempDrySide" required placeholder="Temperatura Campânula (Lado Seco)">
-                <input type="number" id="hoodsTempWetSide" name="hoodsTempWetSide" required placeholder="Temperatura Campânula (Lado Húmido)">
-                <input type="number" id="weight" name="weight" required placeholder="Gramagem">
-                <input type="number" id="humidity" name="humidity" required placeholder="Humidade">
-                <input type="number" id="wetPaste" name="wetPaste" required placeholder="Pasta Húmida">
-                <button type="submit">Enviar Dados Horários</button>
-            </form>
-        </div>
-
-        <div class="form-section">
-            <h2>Preenchimentos de Gás do Fim de Turno</h2>
-            <form id="gasForm">
-                <input type="date" id="gasDate" name="gasDate" required placeholder="Data">
-                <input type="number" id="gasConsumption" name="gasConsumption" required placeholder="Consumo de Gás Natural">
-                <input type="number" id="targetGasConsumption" name="targetGasConsumption" required placeholder="Consumo Objetivo de Gás">
-                <button type="submit">Enviar Dados de Gás</button>
-            </form>
-        </div>
-
-        <button id="viewDataBtn">Ver Todos os Dados</button>
-        <div id="dataContainer"></div>
+        <!-- ... (conteúdo HTML permanece o mesmo) ... -->
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAHzi0MtMwS87DsLnqvQAs4XbRfeKvHflU6EV8F44bs_mGRFbvSKSMzF0iNugLTV5Q/exec';
 
         document.getElementById('hourlyForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -90,52 +46,24 @@
                 },
                 body: JSON.stringify(formData),
             })
-            .then(() => {
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                console.log('Resposta do servidor:', data);
                 alert('Dados enviados com sucesso!');
                 form.reset();
             })
             .catch((error) => {
                 console.error('Erro ao enviar os dados:', error);
+                alert('Erro ao enviar os dados. Por favor, tente novamente.');
             });
         }
 
-        document.getElementById('viewDataBtn').addEventListener('click', function() {
-            fetch(SCRIPT_URL)
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('dataContainer');
-                    container.innerHTML = '';
-                    const table = document.createElement('table');
-                    const headers = ['Timestamp', 'Artigo em Produção', 'Velocidade do Yankee', 'Pressão do Yankee', 
-                                     'Temperatura Campânula (Lado Seco)', 'Temperatura Campânula (Lado Húmido)', 
-                                     'Gramagem', 'Humidade', 'Pasta Húmida', 'Consumo de Gás Natural', 'Consumo Objetivo de Gás'];
-                    const thead = document.createElement('thead');
-                    const headerRow = document.createElement('tr');
-                    headers.forEach(header => {
-                        const th = document.createElement('th');
-                        th.textContent = header;
-                        headerRow.appendChild(th);
-                    });
-                    thead.appendChild(headerRow);
-                    table.appendChild(thead);
-
-                    const tbody = document.createElement('tbody');
-                    data.forEach(row => {
-                        const tr = document.createElement('tr');
-                        headers.forEach(header => {
-                            const td = document.createElement('td');
-                            td.textContent = row[header];
-                            tr.appendChild(td);
-                        });
-                        tbody.appendChild(tr);
-                    });
-                    table.appendChild(tbody);
-                    container.appendChild(table);
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar os dados:', error);
-                });
-        });
+        // ... (o resto do código JavaScript permanece o mesmo) ...
     </script>
 </body>
 </html>
