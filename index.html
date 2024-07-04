@@ -34,6 +34,16 @@
             </form>
         </div>
 
+        <div class="form-section">
+            <h2>Consumo de Gás do Turno (8h-16h)</h2>
+            <form id="gasConsumptionForm">
+                <input type="date" id="gasDay" required placeholder="Dia">
+                <input type="number" id="finalGasConsumption" required placeholder="Consumo Final de Gás">
+                <input type="number" id="targetGasConsumption" required placeholder="Consumo Alvo de Gás">
+                <button type="submit">Enviar Consumo de Gás</button>
+            </form>
+        </div>
+
         <button id="viewDataBtn">Ver Todos os Dados</button>
         <div id="dataContainer"></div>
     </div>
@@ -55,7 +65,7 @@
             .then(() => {
                 console.log('Dados enviados com sucesso');
                 alert('Dados enviados com sucesso!');
-                document.getElementById('shiftForm').reset();
+                document.getElementById(formData.type === 'shiftEntry' ? 'shiftForm' : 'gasConsumptionForm').reset();
             })
             .catch((error) => {
                 console.error('Erro ao enviar dados:', error);
@@ -84,6 +94,17 @@
             } else {
                 alert('Por favor, insira apenas dados entre 8h e 16h.');
             }
+        });
+
+        document.getElementById('gasConsumptionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                type: 'gasConsumption',
+                day: document.getElementById('gasDay').value,
+                finalGasConsumption: document.getElementById('finalGasConsumption').value,
+                targetGasConsumption: document.getElementById('targetGasConsumption').value
+            };
+            sendData(formData);
         });
 
         document.getElementById('viewDataBtn').addEventListener('click', function() {
@@ -120,3 +141,4 @@
         });
     </script>
 </body>
+</html>
