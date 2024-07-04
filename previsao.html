@@ -14,7 +14,20 @@
         .error { color: red; font-size: 0.9em; }
         .confidence { font-style: italic; color: #666; }
         .certainty { font-weight: bold; color: #4a4a4a; }
-        .home-button { background-color: #008CBA; margin-top: 20px; }
+        .home-button { 
+            background-color: #008CBA; 
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 20px 0;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            width: auto;
+        }
         .home-button:hover { background-color: #007B9A; }
     </style>
 </head>
@@ -44,7 +57,7 @@
             <div id="recomendacoes"></div>
         </div>
 
-        <button onclick="window.location.href='index.html'" class="home-button">Voltar à Página Principal</button>
+        <a href="index.html" class="home-button">Voltar à Página Principal</a>
     </div>
 
     <script>
