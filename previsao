@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previsão de Variáveis</title>
+    <style>
+        /* Estilos similares aos da página existente */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Previsão de Variáveis</h1>
+        
+        <div class="form-section">
+            <h2>Entrada de Dados</h2>
+            <form id="predictionForm">
+                <input type="number" id="artigo" placeholder="Artigo em Produção">
+                <input type="number" id="velocidadeYankee" placeholder="Velocidade do Yankee">
+                <input type="number" id="pressaoYankee" placeholder="Pressão do Yankee">
+                <input type="number" id="tempCampanulaSeco" placeholder="Temperatura Campânula (Lado Seco)">
+                <input type="number" id="tempCampanulaHumido" placeholder="Temperatura Campânula (Lado Húmido)">
+                <input type="number" id="gramagem" placeholder="Gramagem">
+                <input type="number" id="humidade" placeholder="Humidade">
+                <input type="number" id="pastaHumida" placeholder="Pasta Húmida">
+                <button type="submit" id="calcularBtn">Calcular</button>
+            </form>
+        </div>
+
+        <div id="resultados" style="display:none;">
+            <h2>Resultados da Previsão</h2>
+            <div id="previsoes"></div>
+            <div id="graficos"></div>
+            <div id="recomendacoes"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="prediction.js"></script>
+</body>
+</html>
