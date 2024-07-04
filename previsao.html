@@ -13,6 +13,7 @@
         .form-section { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
         .error { color: red; font-size: 0.9em; }
         .confidence { font-style: italic; color: #666; }
+        .certainty { font-weight: bold; color: #4a4a4a; }
     </style>
 </head>
 <body>
@@ -88,11 +89,12 @@
                     // Vamos simular uma resposta para demonstração
                     displayResults({
                         prediction: 185.5,
+                        certainty: 0.89,
                         confidenceInterval: { lower: 175.2, upper: 195.8 },
                         recommendations: [
-                            "Recomendamos Velocidade do Yankee de 550 para otimizar o consumo de gás. (Certeza: 85.5%)",
-                            "Recomendamos Temperatura Campânula (Lado Seco) de 480 para otimizar o consumo de gás. (Certeza: 92.3%)",
-                            "Recomendamos Gramagem de 22 para otimizar o consumo de gás. (Certeza: 78.9%)"
+                            { value: 550, parameter: "Velocidade do Yankee", certainty: 0.855 },
+                            { value: 480, parameter: "Temperatura Campânula (Lado Seco)", certainty: 0.923 },
+                            { value: 22, parameter: "Gramagem", certainty: 0.789 }
                         ]
                     });
                 })
@@ -154,12 +156,18 @@
                 const previsoesDiv = document.getElementById('previsoes');
                 previsoesDiv.innerHTML = `
                     <p>Consumo de gás previsto: ${data.prediction} m³</p>
+                    <p class="certainty">Grau de certeza: ${(data.certainty * 100).toFixed(1)}%</p>
                     <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
                 `;
 
                 const recomendacoesDiv = document.getElementById('recomendacoes');
                 recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
-                    data.recommendations.map(rec => `<li>${rec}</li>`).join('') +
+                    data.recommendations.map(rec => `
+                        <li>
+                            Recomendamos ${rec.parameter} de ${rec.value} para otimizar o consumo de gás. 
+                            <span class="certainty">(Certeza: ${(rec.certainty * 100).toFixed(1)}%)</span>
+                        </li>
+                    `).join('') +
                     '</ul>';
             }
         });
