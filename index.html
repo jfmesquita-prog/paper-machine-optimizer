@@ -53,25 +53,24 @@
 
         function sendData(formData) {
             console.log('Enviando dados:', formData);
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', SCRIPT_URL, true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    console.log('Resposta recebida. Status:', xhr.status);
-                    console.log('Resposta:', xhr.responseText);
-                    if (xhr.status === 200) {
-                        alert('Dados enviados com sucesso!');
-                        document.getElementById(formData.type === 'shiftEntry' ? 'shiftForm' : 'gasConsumptionForm').reset();
-                    } else {
-                        alert('Erro ao enviar dados. Por favor, tente novamente.');
-                    }
-                }
-            };
-            var encodedData = Object.keys(formData).map(function(key) {
-                return encodeURIComponent(key) + '=' + encodeURIComponent(formData[key]);
-            }).join('&');
-            xhr.send(encodedData);
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(() => {
+                console.log('Dados enviados com sucesso');
+                alert('Dados enviados com sucesso!');
+                document.getElementById(formData.type === 'shiftEntry' ? 'shiftForm' : 'gasConsumptionForm').reset();
+            })
+            .catch((error) => {
+                console.error('Erro ao enviar dados:', error);
+                alert('Erro ao enviar dados. Por favor, tente novamente.');
+            });
         }
 
         document.getElementById('shiftForm').addEventListener('submit', function(e) {
