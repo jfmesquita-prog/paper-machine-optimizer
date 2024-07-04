@@ -62,10 +62,22 @@ function sendData(formData) {
         },
         body: JSON.stringify(formData),
     })
-    .then(() => {
-        console.log('Dados enviados com sucesso');
-        alert('Dados enviados com sucesso!');
-        document.getElementById('gasConsumptionForm').reset();
+    .then(response => {
+        console.log('Resposta recebida:', response);
+        if (response.type === 'opaque') {
+            console.log('Resposta opaca recebida, assumindo sucesso');
+            return { success: true };
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Dados processados:', data);
+        if (data.success) {
+            alert('Dados enviados com sucesso!');
+            document.getElementById(formData.type === 'shiftEntry' ? 'shiftForm' : 'gasConsumptionForm').reset();
+        } else {
+            throw new Error('Falha no envio dos dados');
+        }
     })
     .catch((error) => {
         console.error('Erro ao enviar dados:', error);
