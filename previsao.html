@@ -40,47 +40,49 @@
     </div>
 
     <script>
-        document.getElementById('predictionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                "Artigo em Produção": document.getElementById('artigo').value,
-                "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
-                "Pressão do Yankee": document.getElementById('pressaoYankee').value,
-                "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
-                "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
-                "Gramagem": document.getElementById('gramagem').value,
-                "Humidade": document.getElementById('humidade').value,
-                "Pasta Húmida": document.getElementById('pastaHumida').value
-            };
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('predictionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    "Artigo em Produção": document.getElementById('artigo').value,
+                    "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
+                    "Pressão do Yankee": document.getElementById('pressaoYankee').value,
+                    "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
+                    "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
+                    "Gramagem": document.getElementById('gramagem').value,
+                    "Humidade": document.getElementById('humidade').value,
+                    "Pasta Húmida": document.getElementById('pastaHumida').value
+                };
 
-            console.log('Enviando dados:', formData);
+                console.log('Enviando dados:', formData);
 
-            google.script.run
-                .withSuccessHandler(function(result) {
-                    console.log('Resultado recebido:', result);
-                    displayResults(result);
-                })
-                .withFailureHandler(function(error) {
-                    console.error('Erro:', error);
-                    alert('Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.');
-                })
-                .predictGasConsumption(formData);
+                google.script.run
+                    .withSuccessHandler(function(result) {
+                        console.log('Resultado recebido:', result);
+                        displayResults(result);
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Erro:', error);
+                        alert('Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.');
+                    })
+                    .predictGasConsumption(formData);
+            });
+
+            function displayResults(data) {
+                console.log('Exibindo resultados:', data);
+                const resultadosDiv = document.getElementById('resultados');
+                resultadosDiv.style.display = 'block';
+
+                const previsoesDiv = document.getElementById('previsoes');
+                previsoesDiv.innerHTML = `<p>Consumo de gás previsto: ${data.prediction.toFixed(2)}</p>`;
+
+                const recomendacoesDiv = document.getElementById('recomendacoes');
+                recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
+                    data.recommendations.map(rec => `<li>${rec}</li>`).join('') +
+                    '</ul>';
+            }
         });
-
-        function displayResults(data) {
-            console.log('Exibindo resultados:', data);
-            const resultadosDiv = document.getElementById('resultados');
-            resultadosDiv.style.display = 'block';
-
-            const previsoesDiv = document.getElementById('previsoes');
-            previsoesDiv.innerHTML = `<p>Consumo de gás previsto: ${data.prediction.toFixed(2)}</p>`;
-
-            const recomendacoesDiv = document.getElementById('recomendacoes');
-            recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
-                data.recommendations.map(rec => `<li>${rec}</li>`).join('') +
-                '</ul>';
-        }
     </script>
 </body>
 </html>
