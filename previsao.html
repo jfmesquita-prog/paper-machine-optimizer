@@ -12,6 +12,7 @@
         button:hover { background-color: #45a049; }
         .form-section { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
         .error { color: red; font-size: 0.9em; }
+        .confidence { font-style: italic; color: #666; }
     </style>
 </head>
 <body>
@@ -63,7 +64,6 @@
                     "Pasta Húmida": document.getElementById('pastaHumida').value
                 };
 
-                // Remover campos vazios
                 Object.keys(formData).forEach(key => {
                     if (formData[key] === '') {
                         delete formData[key];
@@ -88,10 +88,11 @@
                     // Vamos simular uma resposta para demonstração
                     displayResults({
                         prediction: 185.5,
+                        confidenceInterval: { lower: 175.2, upper: 195.8 },
                         recommendations: [
-                            "Considere ajustar a velocidade do Yankee para 550",
-                            "Recomendamos uma temperatura de campânula (lado seco) de 480",
-                            "Para atingir o objetivo, ajuste a gramagem para 22"
+                            "Recomendamos Velocidade do Yankee de 550 para otimizar o consumo de gás. (Certeza: 85.5%)",
+                            "Recomendamos Temperatura Campânula (Lado Seco) de 480 para otimizar o consumo de gás. (Certeza: 92.3%)",
+                            "Recomendamos Gramagem de 22 para otimizar o consumo de gás. (Certeza: 78.9%)"
                         ]
                     });
                 })
@@ -151,7 +152,10 @@
                 resultadosDiv.style.display = 'block';
 
                 const previsoesDiv = document.getElementById('previsoes');
-                previsoesDiv.innerHTML = `<p>Consumo de gás previsto: ${data.prediction.toFixed(2)}</p>`;
+                previsoesDiv.innerHTML = `
+                    <p>Consumo de gás previsto: ${data.prediction} m³</p>
+                    <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
+                `;
 
                 const recomendacoesDiv = document.getElementById('recomendacoes');
                 recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
