@@ -119,7 +119,8 @@
                             { parameter: "Velocidade do Yankee", currentValue: 500, recommendedValue: 550, impact: 10.5, certainty: 0.855 },
                             { parameter: "Temperatura Campânula (Lado Seco)", currentValue: 450, recommendedValue: 480, impact: 8.3, certainty: 0.923 },
                             { parameter: "Pressão do Yankee", currentValue: 3.5, recommendedValue: 4.2, impact: 5.7, certainty: 0.789 }
-                        ]
+                        ],
+                        articleExists: true
                     });
                 })
                 .catch((error) => {
@@ -181,6 +182,11 @@
                 const resultadosDiv = document.getElementById('resultados');
                 resultadosDiv.style.display = 'block';
 
+                if (!data.articleExists) {
+                    resultadosDiv.innerHTML = `<p class="error">Erro: Não há dados históricos para este artigo.</p>`;
+                    return;
+                }
+
                 const previsoesDiv = document.getElementById('previsoes');
                 previsoesDiv.innerHTML = `
                     <p>Consumo de gás previsto: ${data.prediction} m³</p>
@@ -189,15 +195,19 @@
                 `;
 
                 const recomendacoesDiv = document.getElementById('recomendacoes');
-                recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
-                    data.recommendations.map(rec => `
-                        <li>
-                            Recomendamos ajustar ${rec.parameter} de ${rec.currentValue} para ${rec.recommendedValue}.
-                            <br>Impacto estimado: ${rec.impact} m³
-                            <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
-                        </li>
-                    `).join('') +
-                    '</ul>';
+                if (data.recommendations && data.recommendations.length > 0) {
+                    recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
+                        data.recommendations.map(rec => `
+                            <li>
+                                Recomendamos ajustar ${rec.parameter} de ${rec.currentValue} para ${rec.recommendedValue}.
+                                <br>Impacto estimado: ${rec.impact} m³
+                                <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
+                            </li>
+                        `).join('') +
+                        '</ul>';
+                } else {
+                    recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
+                }
             }
         });
     </script>
