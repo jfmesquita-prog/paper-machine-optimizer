@@ -70,18 +70,14 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzAA4U7UD3qTFyt5OrLRZc3ch623ul2Pv0EiKZBvADSDPzfeKnmXTkoxF-d6nND1pz8/exec';
 
-        function findForm() {
+        document.addEventListener('DOMContentLoaded', function() {
             const predictionForm = document.getElementById('predictionForm');
             if (predictionForm) {
                 predictionForm.addEventListener('submit', handleSubmit);
-                console.log('Formulário encontrado e event listener adicionado.');
             } else {
-                console.log('Formulário não encontrado, tentando novamente...');
-                setTimeout(findForm, 100);
+                console.error('Formulário não encontrado');
             }
-        }
-
-        window.onload = findForm;
+        });
 
         function handleSubmit(e) {
             e.preventDefault();
@@ -111,7 +107,7 @@
 
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Alterado para 'no-cors'
+                mode: 'no-cors',
                 cache: 'no-cache',
                 headers: {
                     'Content-Type': 'application/json',
@@ -120,30 +116,14 @@
             })
             .then(response => {
                 if (response.type === 'opaque') {
-                    // Resposta opaca devido ao modo 'no-cors'
                     console.log('Resposta recebida (modo no-cors)');
-                    return { success: true }; // Retornamos um objeto simulado
+                    return { articleExists: false, error: 'Não foi possível acessar a resposta do servidor devido às restrições de CORS' };
                 }
-                if (!response.ok) {
-                    throw new Error('Erro na resposta do servidor');
-                }
-                return response.text();
+                return response.json();
             })
             .then(result => {
                 console.log('Resultado:', result);
-                // Como estamos usando 'no-cors', não podemos acessar o conteúdo da resposta
-                // Vamos simular uma resposta bem-sucedida
-                displayResults({
-                    articleExists: true,
-                    prediction: 185.5,
-                    certainty: 0.89,
-                    confidenceInterval: { lower: 175.2, upper: 195.8 },
-                    recommendations: [
-                        { parameter: "Velocidade do Yankee", recommendedValue: 550, impact: 10.5, certainty: 0.855 },
-                        { parameter: "Temperatura Campânula (Lado Seco)", recommendedValue: 480, impact: 8.3, certainty: 0.923 },
-                        { parameter: "Pressão do Yankee", recommendedValue: 4.2, impact: 5.7, certainty: 0.789 }
-                    ]
-                });
+                displayResults(result);
             })
             .catch((error) => {
                 console.error('Erro:', error);
@@ -205,7 +185,7 @@
             resultadosDiv.style.display = 'block';
 
             if (!data.articleExists) {
-                resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
+                resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error || 'Artigo não encontrado na base de dados'}</p>`;
                 return;
             }
 
