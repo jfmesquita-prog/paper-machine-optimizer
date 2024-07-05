@@ -2,33 +2,35 @@
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzAA4U7UD3qTFyt5OrLRZc3ch623ul2Pv0EiKZBvADSDPzfeKnmXTkoxF-d6nND1pz8/exec';
 
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('predictionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (!validateForm()) {
-                return;
-            }
-
-            const formData = {
-                "Artigo em Produção": document.getElementById('artigo').value,
-                "Gramagem": document.getElementById('gramagem').value,
-                "Humidade": document.getElementById('humidade').value,
-                "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
-                "Pressão do Yankee": document.getElementById('pressaoYankee').value,
-                "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
-                "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
-                "Pasta Húmida": document.getElementById('pastaHumida').value
-            };
-
-            Object.keys(formData).forEach(key => {
-                if (formData[key] === '') {
-                    delete formData[key];
+        const predictionForm = document.getElementById('predictionForm');
+        
+        if (predictionForm) {
+            predictionForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!validateForm()) {
+                    return;
                 }
-            });
 
-            console.log('Enviando dados:', formData);
+                const formData = {
+                    "Artigo em Produção": document.getElementById('artigo').value,
+                    "Gramagem": document.getElementById('gramagem').value,
+                    "Humidade": document.getElementById('humidade').value,
+                    "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
+                    "Pressão do Yankee": document.getElementById('pressaoYankee').value,
+                    "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
+                    "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
+                    "Pasta Húmida": document.getElementById('pastaHumida').value
+                };
 
-            setTimeout(() => {
+                Object.keys(formData).forEach(key => {
+                    if (formData[key] === '') {
+                        delete formData[key];
+                    }
+                });
+
+                console.log('Enviando dados:', formData);
+
                 fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'cors',
@@ -62,8 +64,10 @@
                     console.error('Erro:', error);
                     displayResults({ error: error.message, articleExists: false });
                 });
-            }, 1000);  // Fechamento do setTimeout
-        });  // Fechamento do addEventListener para 'submit'
+            });
+        } else {
+            console.error('Elemento com ID "predictionForm" não encontrado.');
+        }
 
         function validateForm() {
             const requiredFields = ['artigo', 'gramagem', 'humidade'];
@@ -145,5 +149,5 @@
                 recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
             }
         }
-    });  // Fechamento do addEventListener para 'DOMContentLoaded'
+    });
 </script>
