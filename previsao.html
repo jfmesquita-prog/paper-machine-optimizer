@@ -109,9 +109,9 @@
                         certainty: 0.89,
                         confidenceInterval: { lower: 175.2, upper: 195.8 },
                         recommendations: [
-                            { value: 550, parameter: "Velocidade do Yankee", certainty: 0.855 },
-                            { value: 480, parameter: "Temperatura Campânula (Lado Seco)", certainty: 0.923 },
-                            { value: 22, parameter: "Gramagem", certainty: 0.789 }
+                            { parameter: "Velocidade do Yankee", currentValue: 500, recommendedValue: 550, impact: 10.5, certainty: 0.855 },
+                            { parameter: "Temperatura Campânula (Lado Seco)", currentValue: 450, recommendedValue: 480, impact: 8.3, certainty: 0.923 },
+                            { parameter: "Gramagem", currentValue: 20, recommendedValue: 22, impact: 5.7, certainty: 0.789 }
                         ]
                     });
                 })
@@ -173,7 +173,7 @@
                 const previsoesDiv = document.getElementById('previsoes');
                 previsoesDiv.innerHTML = `
                     <p>Consumo de gás previsto: ${data.prediction} m³</p>
-                    <p class="certainty">Grau de certeza: ${(data.certainty * 100).toFixed(1)}%</p>
+                    <p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>
                     <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
                 `;
 
@@ -181,8 +181,9 @@
                 recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
                     data.recommendations.map(rec => `
                         <li>
-                            Recomendamos ${rec.parameter} de ${rec.value} para otimizar o consumo de gás. 
-                            <span class="certainty">(Certeza: ${(rec.certainty * 100).toFixed(1)}%)</span>
+                            Recomendamos ajustar ${rec.parameter} de ${rec.currentValue} para ${rec.recommendedValue}.
+                            <br>Impacto estimado: ${rec.impact} m³
+                            <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
                         </li>
                     `).join('') +
                     '</ul>';
