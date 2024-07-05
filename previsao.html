@@ -98,36 +98,37 @@
                 console.log('Enviando dados:', formData);
 
                 fetch(SCRIPT_URL, {
-    method: 'POST',
-    mode: 'cors', // Alterado de 'no-cors' para 'cors'
-    cache: 'no-cache',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(formData),
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Erro na resposta do servidor: ' + response.statusText);
-    }
-    return response.text(); // Usamos text() em vez de json()
-})
-.then(text => {
-    console.log('Resposta do servidor:', text); // Log da resposta
-    try {
-        const result = JSON.parse(text);
-        if (!result.articleExists) {
-            throw new Error(result.error);
-        }
-        displayResults(result);
-    } catch (error) {
-        throw new Error('Erro ao processar resposta do servidor: ' + error.message);
-    }
-})
-.catch((error) => {
-    console.error('Erro:', error);
-    displayResults({ error: error.message, articleExists: false });
-});
+                    method: 'POST',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na resposta do servidor: ' + response.statusText);
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('Resposta do servidor:', text);
+                    try {
+                        const result = JSON.parse(text);
+                        if (!result.articleExists) {
+                            throw new Error(result.error);
+                        }
+                        displayResults(result);
+                    } catch (error) {
+                        throw new Error('Erro ao processar resposta do servidor: ' + error.message);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Erro:', error);
+                    displayResults({ error: error.message, articleExists: false });
+                });
+            });
 
             function validateForm() {
                 const requiredFields = ['artigo', 'gramagem', 'humidade'];
@@ -177,38 +178,39 @@
                 }
             }
 
-function displayResults(data) {
-    console.log('Exibindo resultados:', data);
-    const resultadosDiv = document.getElementById('resultados');
-    resultadosDiv.style.display = 'block';
+            function displayResults(data) {
+                console.log('Exibindo resultados:', data);
+                const resultadosDiv = document.getElementById('resultados');
+                resultadosDiv.style.display = 'block';
 
-    if (!data.articleExists) {
-        resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
-        return;
-    }
+                if (!data.articleExists) {
+                    resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
+                    return;
+                }
 
-    const previsoesDiv = document.getElementById('previsoes');
-    previsoesDiv.innerHTML = `
-        <p>Consumo de gás previsto: ${data.prediction} m³</p>
-        <p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>
-        <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
-    `;
+                const previsoesDiv = document.getElementById('previsoes');
+                previsoesDiv.innerHTML = `
+                    <p>Consumo de gás previsto: ${data.prediction} m³</p>
+                    <p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>
+                    <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
+                `;
 
-    const recomendacoesDiv = document.getElementById('recomendacoes');
-    if (data.recommendations && data.recommendations.length > 0) {
-        recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
-            data.recommendations.map(rec => `
-                <li>
-                    Recomendamos ajustar ${rec.parameter} para ${rec.recommendedValue}.
-                    <br>Impacto estimado: ${rec.impact} m³
-                    <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
-                </li>
-            `).join('') +
-            '</ul>';
-    } else {
-        recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
-    }
-}
+                const recomendacoesDiv = document.getElementById('recomendacoes');
+                if (data.recommendations && data.recommendations.length > 0) {
+                    recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
+                        data.recommendations.map(rec => `
+                            <li>
+                                Recomendamos ajustar ${rec.parameter} para ${rec.recommendedValue}.
+                                <br>Impacto estimado: ${rec.impact} m³
+                                <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
+                            </li>
+                        `).join('') +
+                        '</ul>';
+                } else {
+                    recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
+                }
+            }
+        });
     </script>
 </body>
 </html>
