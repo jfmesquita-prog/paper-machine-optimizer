@@ -1,218 +1,149 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Previsão de Consumo de Gás</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        input, button { margin: 5px; padding: 5px; width: 100%; }
-        button { cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 10px; }
-        button:hover { background-color: #45a049; }
-        .form-section { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
-        .error { color: red; font-size: 0.9em; }
-        .confidence { font-style: italic; color: #666; }
-        .certainty { font-weight: bold; color: #4a4a4a; }
-        .home-button { 
-            background-color: #008CBA; 
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: block;
-            font-size: 16px;
-            margin: 20px auto;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            width: 200px;
-        }
-        .home-button:hover { background-color: #007B9A; }
-        .required::after { content: " *"; color: red; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Previsão de Consumo de Gás</h1>
-        
-        <div class="form-section">
-            <h2>Entrada de Dados</h2>
-            <p>Os campos marcados com * são obrigatórios. Os campos não preenchidos receberão recomendações.</p>
-            <form id="predictionForm">
-                <label for="artigo" class="required">Artigo em Produção</label>
-                <input type="text" id="artigo" placeholder="Artigo em Produção" required>
-                
-                <label for="gramagem" class="required">Gramagem</label>
-                <input type="number" id="gramagem" placeholder="Gramagem (0-30)" min="0" max="30" step="0.1" required>
-                
-                <label for="humidade" class="required">Humidade</label>
-                <input type="number" id="humidade" placeholder="Humidade (0-10)" min="0" max="10" step="0.1" required>
-                
-                <input type="number" id="velocidadeYankee" placeholder="Velocidade do Yankee (0-2100)" min="0" max="2100">
-                <input type="number" id="pressaoYankee" placeholder="Pressão do Yankee (0-15)" min="0" max="15" step="0.1">
-                <input type="number" id="tempCampanulaSeco" placeholder="Temperatura Campânula Lado Seco (0-700)" min="0" max="700">
-                <input type="number" id="tempCampanulaHumido" placeholder="Temperatura Campânula Lado Húmido (0-700)" min="0" max="700">
-                <input type="number" id="pastaHumida" placeholder="Pasta Húmida (0-800)" min="0" max="800">
-                <button type="submit">Calcular</button>
-            </form>
-        </div>
+<script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzAA4U7UD3qTFyt5OrLRZc3ch623ul2Pv0EiKZBvADSDPzfeKnmXTkoxF-d6nND1pz8/exec';
 
-        <div id="resultados" style="display:none;">
-            <h2>Resultados da Previsão</h2>
-            <div id="previsoes"></div>
-            <div id="recomendacoes"></div>
-        </div>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
 
-        <a href="index.html" class="home-button">Voltar à Página Principal</a>
-    </div>
+            const formData = {
+                "Artigo em Produção": document.getElementById('artigo').value,
+                "Gramagem": document.getElementById('gramagem').value,
+                "Humidade": document.getElementById('humidade').value,
+                "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
+                "Pressão do Yankee": document.getElementById('pressaoYankee').value,
+                "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
+                "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
+                "Pasta Húmida": document.getElementById('pastaHumida').value
+            };
 
-    <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzAA4U7UD3qTFyt5OrLRZc3ch623ul2Pv0EiKZBvADSDPzfeKnmXTkoxF-d6nND1pz8/exec';
-
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('predictionForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                if (!validateForm()) {
-                    return;
+            Object.keys(formData).forEach(key => {
+                if (formData[key] === '') {
+                    delete formData[key];
                 }
+            });
 
-                const formData = {
-                    "Artigo em Produção": document.getElementById('artigo').value,
-                    "Gramagem": document.getElementById('gramagem').value,
-                    "Humidade": document.getElementById('humidade').value,
-                    "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
-                    "Pressão do Yankee": document.getElementById('pressaoYankee').value,
-                    "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
-                    "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
-                    "Pasta Húmida": document.getElementById('pastaHumida').value
-                };
+            console.log('Enviando dados:', formData);
 
-                Object.keys(formData).forEach(key => {
-                    if (formData[key] === '') {
-                        delete formData[key];
+            setTimeout(() => {
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error('Erro na resposta do servidor: ' + text);
+                        });
                     }
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('Resposta do servidor:', text);
+                    try {
+                        const result = JSON.parse(text);
+                        if (!result.articleExists) {
+                            throw new Error(result.error || 'Artigo não encontrado');
+                        }
+                        displayResults(result);
+                    } catch (error) {
+                        throw new Error('Erro ao processar resposta do servidor: ' + error.message);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Erro:', error);
+                    displayResults({ error: error.message, articleExists: false });
                 });
+            }, 1000);  // Fechamento do setTimeout
+        });  // Fechamento do addEventListener para 'submit'
 
-                console.log('Enviando dados:', formData);
+        function validateForm() {
+            const requiredFields = ['artigo', 'gramagem', 'humidade'];
+            let isValid = true;
 
-                setTimeout(() => {
-fetch(SCRIPT_URL, {
-    method: 'POST',
-    mode: 'cors',
-    cache: 'no-cache',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(formData),
-})
-.then(response => {
-    if (!response.ok) {
-        return response.text().then(text => {
-            throw new Error('Erro na resposta do servidor: ' + text);
-        });
-    }
-    return response.text();
-})
-.then(text => {
-    console.log('Resposta do servidor:', text);
-    try {
-        const result = JSON.parse(text);
-        if (!result.articleExists) {
-            throw new Error(result.error || 'Artigo não encontrado');
-        }
-        displayResults(result);
-    } catch (error) {
-        throw new Error('Erro ao processar resposta do servidor: ' + error.message);
-    }
-})
-.catch((error) => {
-    console.error('Erro:', error);
-    displayResults({ error: error.message, articleExists: false });
-});
+            requiredFields.forEach(fieldId => {
+                const input = document.getElementById(fieldId);
+                if (input.value.trim() === '') {
+                    isValid = false;
+                    showError(input, 'Este campo é obrigatório.');
+                } else {
+                    clearError(input);
+                }
+            });
 
-            function validateForm() {
-                const requiredFields = ['artigo', 'gramagem', 'humidade'];
-                let isValid = true;
+            const inputs = document.querySelectorAll('#predictionForm input[type="number"]');
+            inputs.forEach(input => {
+                if (input.value !== '') {
+                    const value = parseFloat(input.value);
+                    const min = parseFloat(input.min);
+                    const max = parseFloat(input.max);
 
-                requiredFields.forEach(fieldId => {
-                    const input = document.getElementById(fieldId);
-                    if (input.value.trim() === '') {
+                    if (isNaN(value) || value < min || value > max) {
                         isValid = false;
-                        showError(input, 'Este campo é obrigatório.');
+                        showError(input, `Por favor, insira um valor entre ${min} e ${max}.`);
                     } else {
                         clearError(input);
                     }
-                });
-
-                const inputs = document.querySelectorAll('#predictionForm input[type="number"]');
-                inputs.forEach(input => {
-                    if (input.value !== '') {
-                        const value = parseFloat(input.value);
-                        const min = parseFloat(input.min);
-                        const max = parseFloat(input.max);
-
-                        if (isNaN(value) || value < min || value > max) {
-                            isValid = false;
-                            showError(input, `Por favor, insira um valor entre ${min} e ${max}.`);
-                        } else {
-                            clearError(input);
-                        }
-                    }
-                });
-
-                return isValid;
-            }
-
-            function showError(input, message) {
-                clearError(input);
-                const error = document.createElement('div');
-                error.className = 'error';
-                error.textContent = message;
-                input.parentNode.insertBefore(error, input.nextSibling);
-            }
-
-            function clearError(input) {
-                const error = input.nextSibling;
-                if (error && error.className === 'error') {
-                    error.parentNode.removeChild(error);
                 }
+            });
+
+            return isValid;
+        }
+
+        function showError(input, message) {
+            clearError(input);
+            const error = document.createElement('div');
+            error.className = 'error';
+            error.textContent = message;
+            input.parentNode.insertBefore(error, input.nextSibling);
+        }
+
+        function clearError(input) {
+            const error = input.nextSibling;
+            if (error && error.className === 'error') {
+                error.parentNode.removeChild(error);
+            }
+        }
+
+        function displayResults(data) {
+            console.log('Exibindo resultados:', data);
+            const resultadosDiv = document.getElementById('resultados');
+            resultadosDiv.style.display = 'block';
+
+            if (!data.articleExists) {
+                resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
+                return;
             }
 
-            function displayResults(data) {
-                console.log('Exibindo resultados:', data);
-                const resultadosDiv = document.getElementById('resultados');
-                resultadosDiv.style.display = 'block';
+            const previsoesDiv = document.getElementById('previsoes');
+            previsoesDiv.innerHTML = `
+                <p>Consumo de gás previsto: ${data.prediction} m³</p>
+                <p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>
+                <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
+            `;
 
-                if (!data.articleExists) {
-                    resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
-                    return;
-                }
-
-                const previsoesDiv = document.getElementById('previsoes');
-                previsoesDiv.innerHTML = `
-                    <p>Consumo de gás previsto: ${data.prediction} m³</p>
-                    <p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>
-                    <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
-                `;
-
-                const recomendacoesDiv = document.getElementById('recomendacoes');
-                if (data.recommendations && data.recommendations.length > 0) {
-                    recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
-                        data.recommendations.map(rec => `
-                            <li>
-                                Recomendamos ajustar ${rec.parameter} para ${rec.recommendedValue}.
-                                <br>Impacto estimado: ${rec.impact} m³
-                                <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
-                            </li>
-                        `).join('') +
-                        '</ul>';
-                } else {
-                    recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
-                }
+            const recomendacoesDiv = document.getElementById('recomendacoes');
+            if (data.recommendations && data.recommendations.length > 0) {
+                recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
+                    data.recommendations.map(rec => `
+                        <li>
+                            Recomendamos ajustar ${rec.parameter} para ${rec.recommendedValue}.
+                            <br>Impacto estimado: ${rec.impact} m³
+                            <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
+                        </li>
+                    `).join('') +
+                    '</ul>';
+            } else {
+                recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
             }
-        });
-    </script>
-</body>
-</html>
+        }
+    });  // Fechamento do addEventListener para 'DOMContentLoaded'
+</script>
