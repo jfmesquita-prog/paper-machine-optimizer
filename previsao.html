@@ -39,21 +39,21 @@
         <div class="form-section">
             <h2>Entrada de Dados</h2>
             <p>Os campos marcados com * são obrigatórios. Os campos não preenchidos receberão recomendações.</p>
-            <form id="predictionForm">
+            <form id="predictionForm" action="https://script.google.com/macros/s/AKfycbzK6vAnljMPP_wJT68-4EZqdZA66CURYLpsGwI1dKDC4X_DQsTJSNq09BgUEDeIPGS6/exec" method="POST">
                 <label for="artigo" class="required">Artigo em Produção</label>
-                <input type="text" id="artigo" placeholder="Artigo em Produção" required>
+                <input type="text" id="artigo" name="Artigo em Produção" placeholder="Artigo em Produção" required>
                 
                 <label for="gramagem" class="required">Gramagem</label>
-                <input type="number" id="gramagem" placeholder="Gramagem (0-30)" min="0" max="30" step="0.1" required>
+                <input type="number" id="gramagem" name="Gramagem" placeholder="Gramagem (0-30)" min="0" max="30" step="0.1" required>
                 
                 <label for="humidade" class="required">Humidade</label>
-                <input type="number" id="humidade" placeholder="Humidade (0-10)" min="0" max="10" step="0.1" required>
+                <input type="number" id="humidade" name="Humidade" placeholder="Humidade (0-10)" min="0" max="10" step="0.1" required>
                 
-                <input type="number" id="velocidadeYankee" placeholder="Velocidade do Yankee (0-2100)" min="0" max="2100">
-                <input type="number" id="pressaoYankee" placeholder="Pressão do Yankee (0-15)" min="0" max="15" step="0.1">
-                <input type="number" id="tempCampanulaSeco" placeholder="Temperatura Campânula Lado Seco (0-700)" min="0" max="700">
-                <input type="number" id="tempCampanulaHumido" placeholder="Temperatura Campânula Lado Húmido (0-700)" min="0" max="700">
-                <input type="number" id="pastaHumida" placeholder="Pasta Húmida (0-800)" min="0" max="800">
+                <input type="number" id="velocidadeYankee" name="Velocidade do Yankee" placeholder="Velocidade do Yankee (0-2100)" min="0" max="2100">
+                <input type="number" id="pressaoYankee" name="Pressão do Yankee" placeholder="Pressão do Yankee (0-15)" min="0" max="15" step="0.1">
+                <input type="number" id="tempCampanulaSeco" name="Temperatura Campânula (Lado Seco)" placeholder="Temperatura Campânula Lado Seco (0-700)" min="0" max="700">
+                <input type="number" id="tempCampanulaHumido" name="Temperatura Campânula (Lado Húmido)" placeholder="Temperatura Campânula Lado Húmido (0-700)" min="0" max="700">
+                <input type="number" id="pastaHumida" name="Pasta Húmida" placeholder="Pasta Húmida (0-800)" min="0" max="800">
                 <button type="submit">Calcular</button>
             </form>
         </div>
@@ -68,108 +68,24 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK6vAnljMPP_wJT68-4EZqdZA66CURYLpsGwI1dKDC4X_DQsTJSNq09BgUEDeIPGS6/exec';
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const predictionForm = document.getElementById('predictionForm');
-            if (predictionForm) {
-                predictionForm.addEventListener('submit', handleSubmit);
-            } else {
-                console.error('Formulário não encontrado');
-            }
-        });
-
-        function handleSubmit(e) {
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            if (!validateForm()) {
-                return;
-            }
+            var form = e.target;
+            var formData = new FormData(form);
 
-            const formData = {
-                "Artigo em Produção": document.getElementById('artigo').value,
-                "Gramagem": document.getElementById('gramagem').value,
-                "Humidade": document.getElementById('humidade').value,
-                "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
-                "Pressão do Yankee": document.getElementById('pressaoYankee').value,
-                "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
-                "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
-                "Pasta Húmida": document.getElementById('pastaHumida').value
-            };
-
-            Object.keys(formData).forEach(key => {
-                if (formData[key] === '') {
-                    delete formData[key];
-                }
-            });
-
-            console.log('Enviando dados:', formData);
-
-            // Usar JSONP para fazer a solicitação
-            const script = document.createElement('script');
-            const callback = 'jsonpCallback_' + Math.round(100000 * Math.random());
-            window[callback] = function(data) {
-                console.log('Resultado:', data);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
                 displayResults(data);
-                delete window[callback];
-                document.body.removeChild(script);
-            };
-
-            const queryString = Object.keys(formData)
-                .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(formData[key]))
-                .join('&');
-
-            script.src = `${SCRIPT_URL}?callback=${callback}&${queryString}`;
-            document.body.appendChild(script);
-        }
-
-        function validateForm() {
-            const requiredFields = ['artigo', 'gramagem', 'humidade'];
-            let isValid = true;
-
-            requiredFields.forEach(fieldId => {
-                const input = document.getElementById(fieldId);
-                if (input.value.trim() === '') {
-                    isValid = false;
-                    showError(input, 'Este campo é obrigatório.');
-                } else {
-                    clearError(input);
-                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                displayResults({ error: 'Ocorreu um erro ao processar a solicitação.', articleExists: false });
             });
-
-            const inputs = document.querySelectorAll('#predictionForm input[type="number"]');
-            inputs.forEach(input => {
-                if (input.value !== '') {
-                    const value = parseFloat(input.value);
-                    const min = parseFloat(input.min);
-                    const max = parseFloat(input.max);
-
-                    if (isNaN(value) || value < min || value > max) {
-                        isValid = false;
-                        showError(input, `Por favor, insira um valor entre ${min} e ${max}.`);
-                    } else {
-                        clearError(input);
-                    }
-                }
-            });
-
-            return isValid;
-        }
-
-        function showError(input, message) {
-            clearError(input);
-            const error = document.createElement('div');
-            error.className = 'error';
-            error.textContent = message;
-            input.parentNode.insertBefore(error, input.nextSibling);
-        }
-
-        function clearError(input) {
-            const error = input.nextSibling;
-            if (error && error.className === 'error') {
-                error.parentNode.removeChild(error);
-            }
-        }
+        });
 
         function displayResults(data) {
             console.log('Exibindo resultados:', data);
