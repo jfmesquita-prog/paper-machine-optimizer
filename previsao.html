@@ -69,35 +69,39 @@
 
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK6vAnljMPP_wJT68-4EZqdZA66CURYLpsGwI1dKDC4X_DQsTJSNq09BgUEDeIPGS6/exec';
-document.getElementById('predictionForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var form = e.target;
-    var formData = new FormData(form);
 
-    var data = {};
-    formData.forEach((value, key) => { data[key] = value });
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var form = e.target;
+            var formData = new FormData(form);
 
-    // Função de callback
-    window.handlePredictionResult = function(result) {
-        console.log('Resposta completa do servidor:', result);
-        displayResults(result);
-        // Remover o script após a execução
-        document.body.removeChild(script);
-        delete window.handlePredictionResult;
-    };
+            var data = {};
+            formData.forEach((value, key) => { data[key] = value });
 
-    // Criar URL com parâmetros
-    var url = new URL(SCRIPT_URL);
-    Object.keys(data).forEach(key => url.searchParams.append(key, data[key]));
-    url.searchParams.append('callback', 'handlePredictionResult');
+            var url = new URL(SCRIPT_URL);
+            url.searchParams.append('action', 'predict');
+            for (let [key, value] of Object.entries(data)) {
+                url.searchParams.append(key, value);
+            }
+            url.searchParams.append('callback', 'handlePredictionResult');
 
-    // Criar e adicionar o script
-    var script = document.createElement('script');
-    script.src = url.toString();
-    document.body.appendChild(script);
-});
+            var script = document.createElement('script');
+            script.src = url.toString();
+            document.body.appendChild(script);
+        });
+
+        function handlePredictionResult(data) {
+            console.log('Resposta completa do servidor:', data);
+            if (data.error) {
+                displayResults({ error: data.error });
+            } else {
+                displayResults(data);
+            }
+            // Remover o script após a execução
+            document.body.removeChild(document.body.lastChild);
+        }
+
         function displayResults(data) {
-            console.log('Exibindo resultados:', data);
             const resultadosDiv = document.getElementById('resultados');
             resultadosDiv.style.display = 'block';
 
