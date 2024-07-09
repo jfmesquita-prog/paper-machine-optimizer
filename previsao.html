@@ -39,7 +39,7 @@
         <div class="form-section">
             <h2>Entrada de Dados</h2>
             <p>Os campos marcados com * são obrigatórios. Os campos não preenchidos receberão recomendações.</p>
-            <form id="predictionForm" action="https://script.google.com/macros/s/AKfycbzK6vAnljMPP_wJT68-4EZqdZA66CURYLpsGwI1dKDC4X_DQsTJSNq09BgUEDeIPGS6/exec" method="POST">
+            <form id="predictionForm">
                 <label for="artigo" class="required">Artigo em Produção</label>
                 <input type="text" id="artigo" name="Artigo em Produção" placeholder="Artigo em Produção" required>
                 
@@ -68,23 +68,25 @@
     </div>
 
     <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK6vAnljMPP_wJT68-4EZqdZA66CURYLpsGwI1dKDC4X_DQsTJSNq09BgUEDeIPGS6/exec';
+
         document.getElementById('predictionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var form = e.target;
             var formData = new FormData(form);
 
-            fetch(form.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                displayResults(data);
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                displayResults({ error: 'Ocorreu um erro ao processar a solicitação.', articleExists: false });
-            });
+            var queryString = new URLSearchParams(formData).toString();
+            var url = `${SCRIPT_URL}?${queryString}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    displayResults(data);
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    displayResults({ error: 'Ocorreu um erro ao processar a solicitação.', articleExists: false });
+                });
         });
 
         function displayResults(data) {
