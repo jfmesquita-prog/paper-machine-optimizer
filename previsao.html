@@ -105,29 +105,30 @@
 
             console.log('Enviando dados:', formData);
 
- fetch(SCRIPT_URL, {
-    method: 'POST',
-    mode: 'cors', // Mude de 'no-cors' para 'cors'
-    cache: 'no-cache',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(formData),
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Erro na resposta do servidor: ' + response.statusText);
-    }
-    return response.json();
-})
-.then(result => {
-    console.log('Resultado:', result);
-    displayResults(result);
-})
-.catch((error) => {
-    console.error('Erro:', error);
-    displayResults({ error: error.message, articleExists: false });
-});
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'cors',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na resposta do servidor: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(result => {
+                console.log('Resultado:', result);
+                displayResults(result);
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+                displayResults({ error: error.message, articleExists: false });
+            });
+        }
 
         function validateForm() {
             const requiredFields = ['artigo', 'gramagem', 'humidade'];
@@ -182,7 +183,7 @@
             const resultadosDiv = document.getElementById('resultados');
             resultadosDiv.style.display = 'block';
 
-            if (!data.articleExists) {
+            if (data.error || !data.articleExists) {
                 resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error || 'Artigo não encontrado na base de dados'}</p>`;
                 return;
             }
