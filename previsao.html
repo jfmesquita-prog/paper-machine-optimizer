@@ -69,25 +69,31 @@
 
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK6vAnljMPP_wJT68-4EZqdZA66CURYLpsGwI1dKDC4X_DQsTJSNq09BgUEDeIPGS6/exec';
+document.getElementById('predictionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = e.target;
+    var formData = new FormData(form);
 
-        document.getElementById('predictionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var form = e.target;
-            var formData = new FormData(form);
+    var queryString = new URLSearchParams(formData).toString();
+    var url = `${SCRIPT_URL}?${queryString}`;
 
-            var queryString = new URLSearchParams(formData).toString();
-            var url = `${SCRIPT_URL}?${queryString}`;
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    displayResults(data);
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    displayResults({ error: 'Ocorreu um erro ao processar a solicitação.', articleExists: false });
-                });
+    fetch(url)
+        .then(response => response.text())  // Alterado de response.json() para response.text()
+        .then(text => {
+            console.log('Resposta completa do servidor:', text);
+            try {
+                const data = JSON.parse(text);
+                displayResults(data);
+            } catch (error) {
+                console.error('Erro ao analisar JSON:', error);
+                displayResults({ error: 'A resposta do servidor não é um JSON válido: ' + text });
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            displayResults({ error: 'Ocorreu um erro ao processar a solicitação: ' + error.message });
         });
+});
 
         function displayResults(data) {
             console.log('Exibindo resultados:', data);
