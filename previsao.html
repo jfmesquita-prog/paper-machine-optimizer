@@ -74,25 +74,31 @@ document.getElementById('predictionForm').addEventListener('submit', function(e)
     var form = e.target;
     var formData = new FormData(form);
 
-    var queryString = new URLSearchParams(formData).toString();
-    var url = `${SCRIPT_URL}?${queryString}`;
+    var data = {};
+    formData.forEach((value, key) => { data[key] = value });
 
-    fetch(url)
-        .then(response => response.text())  // Alterado de response.json() para response.text()
-        .then(text => {
-            console.log('Resposta completa do servidor:', text);
-            try {
-                const data = JSON.parse(text);
-                displayResults(data);
-            } catch (error) {
-                console.error('Erro ao analisar JSON:', error);
-                displayResults({ error: 'A resposta do servidor não é um JSON válido: ' + text });
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            displayResults({ error: 'Ocorreu um erro ao processar a solicitação: ' + error.message });
-        });
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.text())
+    .then(text => {
+        console.log('Resposta completa do servidor:', text);
+        try {
+            const data = JSON.parse(text);
+            displayResults(data);
+        } catch (error) {
+            console.error('Erro ao analisar JSON:', error);
+            displayResults({ error: 'A resposta do servidor não é um JSON válido: ' + text });
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        displayResults({ error: 'Ocorreu um erro ao processar a solicitação: ' + error.message });
+    });
 });
 
         function displayResults(data) {
