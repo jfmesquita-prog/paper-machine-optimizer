@@ -77,40 +77,25 @@ document.getElementById('predictionForm').addEventListener('submit', function(e)
     var data = {};
     formData.forEach((value, key) => { data[key] = value });
 
-    fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit', // Alterado para 'omit' para solicitações cross-origin
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text();
-    })
-    .then(text => {
-        console.log('Resposta completa do servidor:', text);
-        try {
-            const data = JSON.parse(text);
-            displayResults(data);
-        } catch (error) {
-            console.error('Erro ao analisar JSON:', error);
-            displayResults({ error: 'A resposta do servidor não é um JSON válido: ' + text });
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        displayResults({ error: 'Ocorreu um erro ao processar a solicitação: ' + error.message });
-    });
-});
+    // Função de callback
+    window.handlePredictionResult = function(result) {
+        console.log('Resposta completa do servidor:', result);
+        displayResults(result);
+        // Remover o script após a execução
+        document.body.removeChild(script);
+        delete window.handlePredictionResult;
+    };
 
+    // Criar URL com parâmetros
+    var url = new URL(SCRIPT_URL);
+    Object.keys(data).forEach(key => url.searchParams.append(key, data[key]));
+    url.searchParams.append('callback', 'handlePredictionResult');
+
+    // Criar e adicionar o script
+    var script = document.createElement('script');
+    script.src = url.toString();
+    document.body.appendChild(script);
+});
         function displayResults(data) {
             console.log('Exibindo resultados:', data);
             const resultadosDiv = document.getElementById('resultados');
