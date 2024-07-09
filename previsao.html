@@ -105,31 +105,29 @@
 
             console.log('Enviando dados:', formData);
 
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                cache: 'no-cache',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-            .then(response => {
-                if (response.type === 'opaque') {
-                    console.log('Resposta recebida (modo no-cors)');
-                    return { articleExists: false, error: 'Não foi possível acessar a resposta do servidor devido às restrições de CORS' };
-                }
-                return response.json();
-            })
-            .then(result => {
-                console.log('Resultado:', result);
-                displayResults(result);
-            })
-            .catch((error) => {
-                console.error('Erro:', error);
-                displayResults({ error: error.message, articleExists: false });
-            });
-        }
+ fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'cors', // Mude de 'no-cors' para 'cors'
+    cache: 'no-cache',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(formData),
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error('Erro na resposta do servidor: ' + response.statusText);
+    }
+    return response.json();
+})
+.then(result => {
+    console.log('Resultado:', result);
+    displayResults(result);
+})
+.catch((error) => {
+    console.error('Erro:', error);
+    displayResults({ error: error.message, articleExists: false });
+});
 
         function validateForm() {
             const requiredFields = ['artigo', 'gramagem', 'humidade'];
