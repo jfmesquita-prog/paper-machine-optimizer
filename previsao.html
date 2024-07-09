@@ -79,12 +79,22 @@ document.getElementById('predictionForm').addEventListener('submit', function(e)
 
     fetch(SCRIPT_URL, {
         method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit', // Alterado para 'omit' para solicitações cross-origin
         headers: {
             'Content-Type': 'application/json',
         },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
         body: JSON.stringify(data)
     })
-    .then(response => response.text())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+    })
     .then(text => {
         console.log('Resposta completa do servidor:', text);
         try {
