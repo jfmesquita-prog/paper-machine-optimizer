@@ -68,7 +68,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYwxq7Vbm3ML1bc7J5N1b9XjOOoNT79LHx7NiK5Z7pwrYegSh3Me5wvxA8HqMDPOCs/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/SEU_ID_DE_IMPLANTAÇÃO_AQUI/exec';
 
         document.addEventListener('DOMContentLoaded', function() {
             const predictionForm = document.getElementById('predictionForm');
@@ -79,7 +79,16 @@
             }
         });
 
-        function handleSubmit(e) {
+        const fetchWithTimeout = (url, options, timeout = 10000) => {
+            return Promise.race([
+                fetch(url, options),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout')), timeout)
+                )
+            ]);
+        };
+
+        async function handleSubmit(e) {
             e.preventDefault();
             
             if (!validateForm()) {
@@ -104,30 +113,32 @@
             });
 
             console.log('Enviando dados:', formData);
+            console.log('URL do script:', SCRIPT_URL);
 
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'cors',
-                cache: 'no-cache',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-            .then(response => {
+            try {
+                const response = await fetchWithTimeout(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                }, 15000);
+
+                console.log('Resposta recebida:', response);
+
                 if (!response.ok) {
-                    throw new Error('Erro na resposta do servidor: ' + response.statusText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return response.json();
-            })
-            .then(result => {
+
+                const result = await response.json();
                 console.log('Resultado:', result);
                 displayResults(result);
-            })
-            .catch((error) => {
-                console.error('Erro:', error);
-                displayResults({ error: error.message, articleExists: false });
-            });
+            } catch (error) {
+                console.error('Erro detalhado:', error);
+                displayResults({ error: `Falha na comunicação com o servidor: ${error.message}`, articleExists: false });
+            }
         }
 
         function validateForm() {
