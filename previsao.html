@@ -79,16 +79,7 @@
             }
         });
 
-        const fetchWithTimeout = (url, options, timeout = 10000) => {
-            return Promise.race([
-                fetch(url, options),
-                new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Timeout')), timeout)
-                )
-            ]);
-        };
-
-        async function handleSubmit(e) {
+        function handleSubmit(e) {
             e.preventDefault();
             
             if (!validateForm()) {
@@ -113,32 +104,23 @@
             });
 
             console.log('Enviando dados:', formData);
-            console.log('URL do script:', SCRIPT_URL);
 
-            try {
-                const response = await fetchWithTimeout(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    cache: 'no-cache',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData),
-                }, 15000);
+            // Usar JSONP para fazer a solicitação
+            const script = document.createElement('script');
+            const callback = 'jsonpCallback_' + Math.round(100000 * Math.random());
+            window[callback] = function(data) {
+                console.log('Resultado:', data);
+                displayResults(data);
+                delete window[callback];
+                document.body.removeChild(script);
+            };
 
-                console.log('Resposta recebida:', response);
+            const queryString = Object.keys(formData)
+                .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(formData[key]))
+                .join('&');
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                console.log('Resultado:', result);
-                displayResults(result);
-            } catch (error) {
-                console.error('Erro detalhado:', error);
-                displayResults({ error: `Falha na comunicação com o servidor: ${error.message}`, articleExists: false });
-            }
+            script.src = `${SCRIPT_URL}?callback=${callback}&${queryString}`;
+            document.body.appendChild(script);
         }
 
         function validateForm() {
