@@ -41,19 +41,19 @@
             <p>Os campos marcados com * são obrigatórios. Os campos não preenchidos receberão recomendações.</p>
             <form id="predictionForm">
                 <label for="artigo" class="required">Artigo em Produção</label>
-                <input type="text" id="artigo" name="Artigo em Produção" placeholder="Artigo em Produção" required>
+                <input type="text" id="artigo" placeholder="Artigo em Produção" required>
                 
                 <label for="gramagem" class="required">Gramagem</label>
-                <input type="number" id="gramagem" name="Gramagem" placeholder="Gramagem (0-30)" min="0" max="30" step="0.1" required>
+                <input type="number" id="gramagem" placeholder="Gramagem (0-30)" min="0" max="30" step="0.1" required>
                 
                 <label for="humidade" class="required">Humidade</label>
-                <input type="number" id="humidade" name="Humidade" placeholder="Humidade (0-10)" min="0" max="10" step="0.1" required>
+                <input type="number" id="humidade" placeholder="Humidade (0-10)" min="0" max="10" step="0.1" required>
                 
-                <input type="number" id="velocidadeYankee" name="Velocidade do Yankee" placeholder="Velocidade do Yankee (0-2100)" min="0" max="2100">
-                <input type="number" id="pressaoYankee" name="Pressão do Yankee" placeholder="Pressão do Yankee (0-15)" min="0" max="15" step="0.1">
-                <input type="number" id="tempCampanulaSeco" name="Temperatura Campânula (Lado Seco)" placeholder="Temperatura Campânula Lado Seco (0-700)" min="0" max="700">
-                <input type="number" id="tempCampanulaHumido" name="Temperatura Campânula (Lado Húmido)" placeholder="Temperatura Campânula Lado Húmido (0-700)" min="0" max="700">
-                <input type="number" id="pastaHumida" name="Pasta Húmida" placeholder="Pasta Húmida (0-800)" min="0" max="800">
+                <input type="number" id="velocidadeYankee" placeholder="Velocidade do Yankee (0-2100)" min="0" max="2100">
+                <input type="number" id="pressaoYankee" placeholder="Pressão do Yankee (0-15)" min="0" max="15" step="0.1">
+                <input type="number" id="tempCampanulaSeco" placeholder="Temperatura Campânula Lado Seco (0-700)" min="0" max="700">
+                <input type="number" id="tempCampanulaHumido" placeholder="Temperatura Campânula Lado Húmido (0-700)" min="0" max="700">
+                <input type="number" id="pastaHumida" placeholder="Pasta Húmida (0-800)" min="0" max="800">
                 <button type="submit">Calcular</button>
             </form>
         </div>
@@ -68,70 +68,148 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK6vAnljMPP_wJT68-4EZqdZA66CURYLpsGwI1dKDC4X_DQsTJSNq09BgUEDeIPGS6/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzAA4U7UD3qTFyt5OrLRZc3ch623ul2Pv0EiKZBvADSDPzfeKnmXTkoxF-d6nND1pz8/exec';
 
-        document.getElementById('predictionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var form = e.target;
-            var formData = new FormData(form);
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('predictionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!validateForm()) {
+                    return;
+                }
 
-            var data = {};
-            formData.forEach((value, key) => { data[key] = value });
+                const formData = {
+                    "Artigo em Produção": document.getElementById('artigo').value,
+                    "Gramagem": document.getElementById('gramagem').value,
+                    "Humidade": document.getElementById('humidade').value,
+                    "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
+                    "Pressão do Yankee": document.getElementById('pressaoYankee').value,
+                    "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
+                    "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
+                    "Pasta Húmida": document.getElementById('pastaHumida').value
+                };
 
-            var url = new URL(SCRIPT_URL);
-            url.searchParams.append('action', 'predict');
-            for (let [key, value] of Object.entries(data)) {
-                url.searchParams.append(key, value);
+                Object.keys(formData).forEach(key => {
+                    if (formData[key] === '') {
+                        delete formData[key];
+                    }
+                });
+
+                console.log('Enviando dados:', formData);
+
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na resposta do servidor');
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    try {
+                        const result = JSON.parse(text);
+                        if (!result.articleExists) {
+                            throw new Error(result.error);
+                        }
+                        displayResults(result);
+                    } catch (error) {
+                        throw new Error('Erro ao processar resposta do servidor');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Erro:', error);
+                    displayResults({ error: error.message, articleExists: false });
+                });
+            });
+
+            function validateForm() {
+                const requiredFields = ['artigo', 'gramagem', 'humidade'];
+                let isValid = true;
+
+                requiredFields.forEach(fieldId => {
+                    const input = document.getElementById(fieldId);
+                    if (input.value.trim() === '') {
+                        isValid = false;
+                        showError(input, 'Este campo é obrigatório.');
+                    } else {
+                        clearError(input);
+                    }
+                });
+
+                const inputs = document.querySelectorAll('#predictionForm input[type="number"]');
+                inputs.forEach(input => {
+                    if (input.value !== '') {
+                        const value = parseFloat(input.value);
+                        const min = parseFloat(input.min);
+                        const max = parseFloat(input.max);
+
+                        if (isNaN(value) || value < min || value > max) {
+                            isValid = false;
+                            showError(input, `Por favor, insira um valor entre ${min} e ${max}.`);
+                        } else {
+                            clearError(input);
+                        }
+                    }
+                });
+
+                return isValid;
             }
-            url.searchParams.append('callback', 'handlePredictionResult');
 
-            var script = document.createElement('script');
-            script.src = url.toString();
-            document.body.appendChild(script);
+            function showError(input, message) {
+                clearError(input);
+                const error = document.createElement('div');
+                error.className = 'error';
+                error.textContent = message;
+                input.parentNode.insertBefore(error, input.nextSibling);
+            }
+
+            function clearError(input) {
+                const error = input.nextSibling;
+                if (error && error.className === 'error') {
+                    error.parentNode.removeChild(error);
+                }
+            }
+
+            function displayResults(data) {
+                console.log('Exibindo resultados:', data);
+                const resultadosDiv = document.getElementById('resultados');
+                resultadosDiv.style.display = 'block';
+
+                if (!data.articleExists) {
+                    resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
+                    return;
+                }
+
+                const previsoesDiv = document.getElementById('previsoes');
+                previsoesDiv.innerHTML = `
+                    <p>Consumo de gás previsto: ${data.prediction} m³</p>
+                    <p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>
+                    <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
+                `;
+
+                const recomendacoesDiv = document.getElementById('recomendacoes');
+                if (data.recommendations && data.recommendations.length > 0) {
+                    recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
+                        data.recommendations.map(rec => `
+                            <li>
+                                Recomendamos ajustar ${rec.parameter} para ${rec.recommendedValue}.
+                                <br>Impacto estimado: ${rec.impact} m³
+                                <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
+                            </li>
+                        `).join('') +
+                        '</ul>';
+                } else {
+                    recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
+                }
+            }
         });
-
-        function handlePredictionResult(data) {
-            console.log('Resposta completa do servidor:', data);
-            if (data.error) {
-                displayResults({ error: data.error });
-            } else {
-                displayResults(data);
-            }
-            // Remover o script após a execução
-            document.body.removeChild(document.body.lastChild);
-        }
-
-        function displayResults(data) {
-            const resultadosDiv = document.getElementById('resultados');
-            resultadosDiv.style.display = 'block';
-
-            if (data.error || !data.articleExists) {
-                resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error || 'Artigo não encontrado na base de dados'}</p>`;
-                return;
-            }
-
-            const previsoesDiv = document.getElementById('previsoes');
-            previsoesDiv.innerHTML = `
-                <p>Consumo de gás previsto: ${data.prediction} m³</p>
-                <p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>
-                <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
-            `;
-
-            const recomendacoesDiv = document.getElementById('recomendacoes');
-            if (data.recommendations && data.recommendations.length > 0) {
-                recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
-                    data.recommendations.map(rec => `
-                        <li>
-                            Recomendamos ajustar ${rec.parameter} para ${rec.recommendedValue}.
-                            <br>Impacto estimado: ${rec.impact} m³
-                            <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
-                        </li>
-                    `).join('') +
-                    '</ul>';
-            } else {
-                recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
-            }
-        }
     </script>
 </body>
 </html>
