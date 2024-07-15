@@ -112,12 +112,22 @@ fetch('/.netlify/functions/proxy', {
     if (data.error) {
         throw new Error(data.error);
     }
+    if (typeof data === 'string') {
+        // Se a resposta for uma string, tente analisá-la como JSON
+        try {
+            data = JSON.parse(data);
+        } catch (e) {
+            console.error('Erro ao analisar resposta do servidor:', e);
+            throw new Error('Resposta do servidor em formato inválido');
+        }
+    }
     displayResults(data);
 })
 .catch(error => {
     console.error('Erro detalhado:', error);
     displayResults({ error: error.message });
 });
+                
             });
 
             function validateForm() {
