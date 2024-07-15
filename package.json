@@ -1,0 +1,8 @@
+{
+  "name": "seu-projeto",
+  "version": "1.0.0",
+  "description": "Seu projeto de previsão de consumo de gás",
+  "dependencies": {
+    "axios": "^0.21.1"
+  }
+}
