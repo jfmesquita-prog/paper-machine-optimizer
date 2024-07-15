@@ -94,24 +94,30 @@
 
                 console.log('Enviando dados:', formData);
 
-                fetch('/.netlify/functions/proxy', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    displayResults(data);
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    displayResults({ error: error.message });
-                });
+fetch('/.netlify/functions/proxy', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(formData),
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+})
+.then(data => {
+    console.log('Dados recebidos do servidor:', data);
+    if (data.error) {
+        throw new Error(data.error);
+    }
+    displayResults(data);
+})
+.catch(error => {
+    console.error('Erro detalhado:', error);
+    displayResults({ error: error.message });
+});
             });
 
             function validateForm() {
