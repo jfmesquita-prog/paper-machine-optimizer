@@ -27,7 +27,9 @@ exports.handler = async function(event, context) {
     if (event.httpMethod === 'POST') {
       const body = JSON.parse(event.body);
       console.log('Dados enviados para o Google Apps Script:', body);
-      response = await axios.post(SCRIPT_URL, body);
+      response = await axios.post(SCRIPT_URL, body, {
+        headers: { 'Content-Type': 'application/json' }
+      });
     } else {
       response = await axios.get(SCRIPT_URL);
     }
@@ -42,13 +44,16 @@ exports.handler = async function(event, context) {
       body: JSON.stringify(response.data)
     };
   } catch (error) {
-    console.error('Erro:', error);
+    console.error('Erro detalhado:', error.response ? error.response.data : error.message);
     return {
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
       },
-      body: JSON.stringify({ error: 'An error occurred while processing your request', details: error.message })
+      body: JSON.stringify({ 
+        error: 'An error occurred while processing your request', 
+        details: error.response ? error.response.data : error.message 
+      })
     };
   }
 };
