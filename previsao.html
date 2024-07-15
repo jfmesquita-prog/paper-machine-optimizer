@@ -115,7 +115,51 @@
             });
 
             function validateForm() {
-                // Implementação da função validateForm (mantida como está)
+                const requiredFields = ['artigo', 'gramagem', 'humidade'];
+                let isValid = true;
+
+                requiredFields.forEach(fieldId => {
+                    const input = document.getElementById(fieldId);
+                    if (input.value.trim() === '') {
+                        isValid = false;
+                        showError(input, 'Este campo é obrigatório.');
+                    } else {
+                        clearError(input);
+                    }
+                });
+
+                const inputs = document.querySelectorAll('#predictionForm input[type="number"]');
+                inputs.forEach(input => {
+                    if (input.value !== '') {
+                        const value = parseFloat(input.value);
+                        const min = parseFloat(input.min);
+                        const max = parseFloat(input.max);
+
+                        if (isNaN(value) || value < min || value > max) {
+                            isValid = false;
+                            showError(input, `Por favor, insira um valor entre ${min} e ${max}.`);
+                        } else {
+                            clearError(input);
+                        }
+                    }
+                });
+
+                return isValid;
+            }
+
+            function showError(input, message) {
+                clearError(input);
+                const error = document.createElement('div');
+                error.className = 'error';
+                error.textContent = message;
+                input.parentNode.insertBefore(error, input.nextSibling);
+            }
+
+            function clearError(input) {
+                const error = input.nextSibling;
+                if (error && error.className === 'error') {
+                    error.parentNode.removeChild(error);
+                }
             }
 
             function displayResults(data) {
