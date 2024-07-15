@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsyy8zD8hd3ZoycKgAOrJ9M02O5zmJcXisuaTiy-NQ2c1IrlF9kAE8UaRzdCPaka--/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/SEU_ID_DO_SCRIPT_AQUI/exec';
 
 exports.handler = async function(event, context) {
   console.log('Função proxy iniciada');
@@ -18,41 +18,49 @@ exports.handler = async function(event, context) {
     };
   }
 
-  if (event.httpMethod !== 'POST' && event.httpMethod !== 'GET') {
+  if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   try {
-    let response;
-    if (event.httpMethod === 'POST') {
-      const body = JSON.parse(event.body);
-      console.log('Dados enviados para o Google Apps Script:', body);
-      response = await axios.post(SCRIPT_URL, body, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-    } else {
-      response = await axios.get(SCRIPT_URL);
-    }
+    const body = JSON.parse(event.body);
+    console.log('Dados enviados para o Google Apps Script:', body);
     
-    console.log('Resposta do Google Apps Script:', response.data);
+    const response = await axios.post(SCRIPT_URL, body, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    console.log('Resposta bruta do Google Apps Script:', response.data);
+
+    // Garantir que a resposta é um objeto JSON válido
+    let responseData;
+    if (typeof response.data === 'string') {
+      responseData = JSON.parse(response.data);
+    } else {
+      responseData = response.data;
+    }
+
+    console.log('Resposta processada do Google Apps Script:', responseData);
 
     return {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(response.data)
+      body: JSON.stringify(responseData)
     };
   } catch (error) {
-    console.error('Erro detalhado:', error.response ? error.response.data : error.message);
+    console.error('Erro detalhado:', error);
     return {
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ 
         error: 'An error occurred while processing your request', 
-        details: error.response ? error.response.data : error.message 
+        details: error.message 
       })
     };
   }
