@@ -105,21 +105,20 @@ fetch('/.netlify/functions/proxy', {
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return response.json();
+    return response.text();
 })
-.then(data => {
-    console.log('Dados recebidos do servidor:', data);
+.then(text => {
+    console.log('Resposta bruta do servidor:', text);
+    let data;
+    try {
+        data = JSON.parse(text);
+    } catch (e) {
+        console.error('Erro ao analisar a resposta JSON:', e);
+        throw new Error('Resposta do servidor em formato inválido');
+    }
+    console.log('Dados parseados:', data);
     if (data.error) {
         throw new Error(data.error);
-    }
-    if (typeof data === 'string') {
-        // Se a resposta for uma string, tente analisá-la como JSON
-        try {
-            data = JSON.parse(data);
-        } catch (e) {
-            console.error('Erro ao analisar resposta do servidor:', e);
-            throw new Error('Resposta do servidor em formato inválido');
-        }
     }
     displayResults(data);
 })
