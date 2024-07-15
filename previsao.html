@@ -99,42 +99,19 @@
 
                 fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    mode: 'cors',
                     cache: 'no-cache',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(formData),
                 })
-                .then(response => {
-                    // Devido ao modo 'no-cors', não podemos acessar o conteúdo da resposta
-                    // Vamos simular uma verificação do artigo aqui
-                    const articleExists = formData["Artigo em Produção"] !== "200";
-                    if (!articleExists) {
-                        throw new Error("Não há dados históricos para este artigo.");
-                    }
-                    return articleExists;
-                })
-                .then(articleExists => {
-                    if (articleExists) {
-                        // Simular uma resposta apenas se o artigo existir
-                        return {
-                            prediction: 185.5,
-                            certainty: 0.89,
-                            confidenceInterval: { lower: 175.2, upper: 195.8 },
-                            recommendations: [
-                                { parameter: "Velocidade do Yankee", currentValue: 500, recommendedValue: 550, impact: 10.5, certainty: 0.855 },
-                                { parameter: "Temperatura Campânula (Lado Seco)", currentValue: 450, recommendedValue: 480, impact: 8.3, certainty: 0.923 },
-                                { parameter: "Pressão do Yankee", currentValue: 3.5, recommendedValue: 4.2, impact: 5.7, certainty: 0.789 }
-                            ],
-                            articleExists: true
-                        };
-                    }
-                })
+                .then(response => response.json())
                 .then(result => {
-                    if (result) {
-                        displayResults(result);
+                    if (result.error) {
+                        throw new Error(result.error);
                     }
+                    displayResults(result);
                 })
                 .catch((error) => {
                     console.error('Erro:', error);
@@ -195,7 +172,7 @@
                 const resultadosDiv = document.getElementById('resultados');
                 resultadosDiv.style.display = 'block';
 
-                if (!data.articleExists) {
+                if (data.error) {
                     resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
                     return;
                 }
