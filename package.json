@@ -1,0 +1,8 @@
+{
+  "name": "paper-machine-optimizer",
+  "version": "1.0.0",
+  "description": "Otimizador de Máquina de Papel",
+  "dependencies": {
+    "axios": "^0.21.1"
+  }
+}
