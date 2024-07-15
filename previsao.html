@@ -163,37 +163,47 @@
             }
 
             function displayResults(data) {
-                console.log('Exibindo resultados:', data);
-                const resultadosDiv = document.getElementById('resultados');
-                resultadosDiv.style.display = 'block';
+    console.log('Exibindo resultados:', data);
+    const resultadosDiv = document.getElementById('resultados');
+    resultadosDiv.style.display = 'block';
 
-                if (data.error) {
-                    resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
-                    return;
-                }
+    if (data.error) {
+        resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
+        return;
+    }
 
-                const previsoesDiv = document.getElementById('previsoes');
-                previsoesDiv.innerHTML = `
-                    <p>Consumo de gás previsto: ${data.prediction} m³</p>
-                    <p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>
-                    <p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>
-                `;
+    const previsoesDiv = document.getElementById('previsoes');
+    let previsaoHTML = '';
 
-                const recomendacoesDiv = document.getElementById('recomendacoes');
-                if (data.recommendations && data.recommendations.length > 0) {
-                    recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
-                        data.recommendations.map(rec => `
-                            <li>
-                                Recomendamos ajustar ${rec.parameter} de ${rec.currentValue} para ${rec.recommendedValue}.
-                                <br>Impacto estimado: ${rec.impact} m³
-                                <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
-                            </li>
-                        `).join('') +
-                        '</ul>';
-                } else {
-                    recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
-                }
-            }
+    if (data.prediction !== undefined) {
+        previsaoHTML += `<p>Consumo de gás previsto: ${data.prediction} m³</p>`;
+    }
+
+    if (data.certainty !== undefined) {
+        previsaoHTML += `<p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>`;
+    }
+
+    if (data.confidenceInterval && data.confidenceInterval.lower !== undefined && data.confidenceInterval.upper !== undefined) {
+        previsaoHTML += `<p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>`;
+    }
+
+    previsoesDiv.innerHTML = previsaoHTML || '<p>Nenhuma previsão disponível.</p>';
+
+    const recomendacoesDiv = document.getElementById('recomendacoes');
+    if (data.recommendations && data.recommendations.length > 0) {
+        recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
+            data.recommendations.map(rec => `
+                <li>
+                    Recomendamos ajustar ${rec.parameter} de ${rec.currentValue} para ${rec.recommendedValue}.
+                    <br>Impacto estimado: ${rec.impact} m³
+                    <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
+                </li>
+            `).join('') +
+            '</ul>';
+    } else {
+        recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
+    }
+}
         });
     </script>
 </body>
