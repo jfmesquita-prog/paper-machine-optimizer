@@ -67,173 +67,157 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM fully loaded and parsed');
-
-        const form = document.getElementById('predictionForm');
-        if (!form) {
-            console.error('Prediction form not found');
-            return;
-        }
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log('Form submitted');
-            
-            if (!validateForm()) {
-                console.log('Form validation failed');
-                return;
-            }
-
-            const formData = {
-                "Artigo em Produção": document.getElementById('artigo').value,
-                "Gramagem": document.getElementById('gramagem').value,
-                "Humidade": document.getElementById('humidade').value,
-                "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
-                "Pressão do Yankee": document.getElementById('pressaoYankee').value,
-                "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
-                "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
-                "Pasta Húmida": document.getElementById('pastaHumida').value
-            };
-
-            Object.keys(formData).forEach(key => {
-                if (formData[key] === '') {
-                    delete formData[key];
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('predictionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!validateForm()) {
+                    return;
                 }
+
+                const formData = {
+                    "Artigo em Produção": document.getElementById('artigo').value,
+                    "Gramagem": document.getElementById('gramagem').value,
+                    "Humidade": document.getElementById('humidade').value,
+                    "Velocidade do Yankee": document.getElementById('velocidadeYankee').value,
+                    "Pressão do Yankee": document.getElementById('pressaoYankee').value,
+                    "Temperatura Campânula (Lado Seco)": document.getElementById('tempCampanulaSeco').value,
+                    "Temperatura Campânula (Lado Húmido)": document.getElementById('tempCampanulaHumido').value,
+                    "Pasta Húmida": document.getElementById('pastaHumida').value
+                };
+
+                Object.keys(formData).forEach(key => {
+                    if (formData[key] === '') {
+                        delete formData[key];
+                    }
+                });
+
+                console.log('Enviando dados:', formData);
+
+                fetch('/.netlify/functions/proxy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                })
+                .then(response => {
+                    console.log('Status da resposta:', response.status);
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('Texto da resposta:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Erro ao analisar JSON:', e);
+                        throw new Error('Resposta inválida do servidor');
+                    }
+                })
+                .then(data => {
+                    console.log('Dados parseados:', data);
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    displayResults(data);
+                })
+                .catch(error => {
+                    console.error('Erro detalhado:', error);
+                    displayResults({ error: error.message });
+                });
             });
 
-            console.log('Enviando dados:', formData);
+            function validateForm() {
+                const requiredFields = ['artigo', 'gramagem', 'humidade'];
+                let isValid = true;
 
-            fetch('/.netlify/functions/proxy', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(formData),
-})
-.then(response => {
-    console.log('Status da resposta:', response.status);
-    return response.text();
-})
-.then(text => {
-    console.log('Texto da resposta:', text);
-    try {
-        return JSON.parse(text);
-    } catch (e) {
-        console.error('Erro ao analisar JSON:', e);
-        throw new Error('Resposta inválida do servidor');
-    }
-})
-.then(data => {
-    console.log('Dados parseados:', data);
-    if (data.error) {
-        throw new Error(data.error);
-    }
-    displayResults(data);
-})
-.catch(error => {
-    console.error('Erro detalhado:', error);
-    displayResults({ error: error.message });
-});
-
-function displayResults(data) {
-    console.log('Exibindo resultados:', data);
-    // ... resto da função ...
-}
-
-        function validateForm() {
-            const requiredFields = ['artigo', 'gramagem', 'humidade'];
-            let isValid = true;
-
-            requiredFields.forEach(fieldId => {
-                const input = document.getElementById(fieldId);
-                if (input.value.trim() === '') {
-                    isValid = false;
-                    showError(input, 'Este campo é obrigatório.');
-                } else {
-                    clearError(input);
-                }
-            });
-
-            const inputs = document.querySelectorAll('#predictionForm input[type="number"]');
-            inputs.forEach(input => {
-                if (input.value !== '') {
-                    const value = parseFloat(input.value);
-                    const min = parseFloat(input.min);
-                    const max = parseFloat(input.max);
-
-                    if (isNaN(value) || value < min || value > max) {
+                requiredFields.forEach(fieldId => {
+                    const input = document.getElementById(fieldId);
+                    if (input.value.trim() === '') {
                         isValid = false;
-                        showError(input, `Por favor, insira um valor entre ${min} e ${max}.`);
+                        showError(input, 'Este campo é obrigatório.');
                     } else {
                         clearError(input);
                     }
+                });
+
+                const inputs = document.querySelectorAll('#predictionForm input[type="number"]');
+                inputs.forEach(input => {
+                    if (input.value !== '') {
+                        const value = parseFloat(input.value);
+                        const min = parseFloat(input.min);
+                        const max = parseFloat(input.max);
+
+                        if (isNaN(value) || value < min || value > max) {
+                            isValid = false;
+                            showError(input, `Por favor, insira um valor entre ${min} e ${max}.`);
+                        } else {
+                            clearError(input);
+                        }
+                    }
+                });
+
+                return isValid;
+            }
+
+            function showError(input, message) {
+                clearError(input);
+                const error = document.createElement('div');
+                error.className = 'error';
+                error.textContent = message;
+                input.parentNode.insertBefore(error, input.nextSibling);
+            }
+
+            function clearError(input) {
+                const error = input.nextSibling;
+                if (error && error.className === 'error') {
+                    error.parentNode.removeChild(error);
                 }
-            });
-
-            return isValid;
-        }
-
-        function showError(input, message) {
-            clearError(input);
-            const error = document.createElement('div');
-            error.className = 'error';
-            error.textContent = message;
-            input.parentNode.insertBefore(error, input.nextSibling);
-        }
-
-        function clearError(input) {
-            const error = input.nextSibling;
-            if (error && error.className === 'error') {
-                error.parentNode.removeChild(error);
-            }
-        }
-
-        function displayResults(data) {
-            console.log('Displaying results:', data);
-            const resultadosDiv = document.getElementById('resultados');
-            resultadosDiv.style.display = 'block';
-
-            if (data.error) {
-                resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
-                return;
             }
 
-            const previsoesDiv = document.getElementById('previsoes');
-            let previsaoHTML = '';
+            function displayResults(data) {
+                console.log('Exibindo resultados:', data);
+                const resultadosDiv = document.getElementById('resultados');
+                resultadosDiv.style.display = 'block';
 
-            if (data.prediction !== undefined) {
-                previsaoHTML += `<p>Consumo de gás previsto: ${data.prediction} m³</p>`;
+                if (data.error) {
+                    resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
+                    return;
+                }
+
+                const previsoesDiv = document.getElementById('previsoes');
+                let previsaoHTML = '';
+
+                if (data.prediction !== undefined) {
+                    previsaoHTML += `<p>Consumo de gás previsto: ${data.prediction.toFixed(2)} m³</p>`;
+                }
+
+                if (data.certainty !== undefined) {
+                    previsaoHTML += `<p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>`;
+                }
+
+                if (data.confidenceInterval && data.confidenceInterval.lower !== undefined && data.confidenceInterval.upper !== undefined) {
+                    previsaoHTML += `<p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower.toFixed(2)} - ${data.confidenceInterval.upper.toFixed(2)} m³</p>`;
+                }
+
+                previsoesDiv.innerHTML = previsaoHTML || '<p>Nenhuma previsão disponível.</p>';
+
+                const recomendacoesDiv = document.getElementById('recomendacoes');
+                if (data.recommendations && data.recommendations.length > 0) {
+                    recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
+                        data.recommendations.map(rec => `
+                            <li>
+                                Recomendamos ajustar ${rec.parameter} de ${rec.currentValue.toFixed(2)} para ${rec.recommendedValue.toFixed(2)}.
+                                <br>Impacto estimado: ${rec.impact.toFixed(2)} m³
+                                <span class="certainty">(Certeza: ${(rec.certainty * 100).toFixed(1)}%)</span>
+                            </li>
+                        `).join('') +
+                        '</ul>';
+                } else {
+                    recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
+                }
             }
-
-            if (data.certainty !== undefined) {
-                previsaoHTML += `<p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>`;
-            }
-
-            if (data.confidenceInterval && data.confidenceInterval.lower !== undefined && data.confidenceInterval.upper !== undefined) {
-                previsaoHTML += `<p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>`;
-            }
-
-            previsoesDiv.innerHTML = previsaoHTML || '<p>Nenhuma previsão disponível.</p>';
-
-            const recomendacoesDiv = document.getElementById('recomendacoes');
-            if (data.recommendations && data.recommendations.length > 0) {
-                recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
-                    data.recommendations.map(rec => `
-                        <li>
-                            Recomendamos ajustar ${rec.parameter} de ${rec.currentValue} para ${rec.recommendedValue}.
-                            <br>Impacto estimado: ${rec.impact} m³
-                            <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
-                        </li>
-                    `).join('') +
-                    '</ul>';
-            } else {
-                recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
-            }
-        }
-    });
-
-    console.log('Script fully loaded');
+        });
     </script>
 </body>
 </html>
