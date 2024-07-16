@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsyy8zD8hd3ZoycKgAOrJ9M02O5zmJcXisuaTiy-NQ2c1IrlF9kAE8UaRzdCPaka--/exec';
+const SCRIPT_URL = 'SEU_URL_DO_GOOGLE_APPS_SCRIPT';
 
 exports.handler = async function(event, context) {
   console.log('Função proxy iniciada');
@@ -8,10 +8,7 @@ exports.handler = async function(event, context) {
   console.log('Corpo da requisição:', event.body);
 
   if (event.httpMethod !== 'POST') {
-    return { 
-      statusCode: 405, 
-      body: JSON.stringify({ error: 'Method Not Allowed' })
-    };
+    return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
 
   try {
@@ -27,13 +24,12 @@ exports.handler = async function(event, context) {
       body: JSON.stringify(response.data)
     };
   } catch (error) {
-    console.error('Erro detalhado:', error);
+    console.error('Erro detalhado:', error.response ? error.response.data : error.message);
     return {
       statusCode: 500,
       body: JSON.stringify({ 
         error: 'An error occurred while processing your request', 
-        details: error.message,
-        stack: error.stack
+        details: error.response ? error.response.data : error.message 
       })
     };
   }
