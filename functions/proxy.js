@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const SCRIPT_URL = 'SEU_URL_DO_GOOGLE_APPS_SCRIPT';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsyy8zD8hd3ZoycKgAOrJ9M02O5zmJcXisuaTiy-NQ2c1IrlF9kAE8UaRzdCPaka--/exec';
 
 exports.handler = async function(event, context) {
   console.log('Função proxy iniciada');
