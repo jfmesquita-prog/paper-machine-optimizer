@@ -94,32 +94,33 @@
 
                 console.log('Enviando dados:', formData);
 
-fetch('/.netlify/functions/proxy', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(formData),
-})
-.then(response => {
-    if (!response.ok) {
-        return response.text().then(text => {
-            throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
-        });
-    }
-    return response.json();
-})
-.then(data => {
-    console.log('Dados recebidos:', data);
-    if (data.error) {
-        throw new Error(data.error);
-    }
-    displayResults(data);
-})
-.catch(error => {
-    console.error('Erro detalhado:', error);
-    displayResults({ error: error.message });
-});
+                fetch('/.netlify/functions/proxy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dados recebidos:', data);
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    displayResults(data);
+                })
+                .catch(error => {
+                    console.error('Erro detalhado:', error);
+                    displayResults({ error: error.message });
+                });
+            });
 
             function validateForm() {
                 const requiredFields = ['artigo', 'gramagem', 'humidade'];
@@ -170,47 +171,47 @@ fetch('/.netlify/functions/proxy', {
             }
 
             function displayResults(data) {
-    console.log('Exibindo resultados:', data);
-    const resultadosDiv = document.getElementById('resultados');
-    resultadosDiv.style.display = 'block';
+                console.log('Exibindo resultados:', data);
+                const resultadosDiv = document.getElementById('resultados');
+                resultadosDiv.style.display = 'block';
 
-    if (data.error) {
-        resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
-        return;
-    }
+                if (data.error) {
+                    resultadosDiv.innerHTML = `<p class="error">Erro: ${data.error}</p>`;
+                    return;
+                }
 
-    const previsoesDiv = document.getElementById('previsoes');
-    let previsaoHTML = '';
+                const previsoesDiv = document.getElementById('previsoes');
+                let previsaoHTML = '';
 
-    if (data.prediction !== undefined) {
-        previsaoHTML += `<p>Consumo de gás previsto: ${data.prediction} m³</p>`;
-    }
+                if (data.prediction !== undefined) {
+                    previsaoHTML += `<p>Consumo de gás previsto: ${data.prediction} m³</p>`;
+                }
 
-    if (data.certainty !== undefined) {
-        previsaoHTML += `<p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>`;
-    }
+                if (data.certainty !== undefined) {
+                    previsaoHTML += `<p class="certainty">Grau de certeza (R²): ${(data.certainty * 100).toFixed(1)}%</p>`;
+                }
 
-    if (data.confidenceInterval && data.confidenceInterval.lower !== undefined && data.confidenceInterval.upper !== undefined) {
-        previsaoHTML += `<p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>`;
-    }
+                if (data.confidenceInterval && data.confidenceInterval.lower !== undefined && data.confidenceInterval.upper !== undefined) {
+                    previsaoHTML += `<p class="confidence">Intervalo de confiança (95%): ${data.confidenceInterval.lower} - ${data.confidenceInterval.upper} m³</p>`;
+                }
 
-    previsoesDiv.innerHTML = previsaoHTML || '<p>Nenhuma previsão disponível.</p>';
+                previsoesDiv.innerHTML = previsaoHTML || '<p>Nenhuma previsão disponível.</p>';
 
-    const recomendacoesDiv = document.getElementById('recomendacoes');
-    if (data.recommendations && data.recommendations.length > 0) {
-        recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
-            data.recommendations.map(rec => `
-                <li>
-                    Recomendamos ajustar ${rec.parameter} de ${rec.currentValue} para ${rec.recommendedValue}.
-                    <br>Impacto estimado: ${rec.impact} m³
-                    <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
-                </li>
-            `).join('') +
-            '</ul>';
-    } else {
-        recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
-    }
-}
+                const recomendacoesDiv = document.getElementById('recomendacoes');
+                if (data.recommendations && data.recommendations.length > 0) {
+                    recomendacoesDiv.innerHTML = '<h3>Recomendações:</h3><ul>' +
+                        data.recommendations.map(rec => `
+                            <li>
+                                Recomendamos ajustar ${rec.parameter} de ${rec.currentValue} para ${rec.recommendedValue}.
+                                <br>Impacto estimado: ${rec.impact} m³
+                                <span class="certainty">(Certeza: ${(parseFloat(rec.certainty) * 100).toFixed(1)}%)</span>
+                            </li>
+                        `).join('') +
+                        '</ul>';
+                } else {
+                    recomendacoesDiv.innerHTML = '<p>Não há recomendações disponíveis para este artigo.</p>';
+                }
+            }
         });
     </script>
 </body>
