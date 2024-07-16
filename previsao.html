@@ -103,20 +103,14 @@ fetch('/.netlify/functions/proxy', {
 })
 .then(response => {
     if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        return response.text().then(text => {
+            throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+        });
     }
-    return response.text();
+    return response.json();
 })
-.then(text => {
-    console.log('Resposta bruta do servidor:', text);
-    let data;
-    try {
-        data = JSON.parse(text);
-    } catch (e) {
-        console.error('Erro ao analisar a resposta JSON:', e);
-        throw new Error('Resposta do servidor em formato inválido');
-    }
-    console.log('Dados parseados:', data);
+.then(data => {
+    console.log('Dados recebidos:', data);
     if (data.error) {
         throw new Error(data.error);
     }
@@ -126,8 +120,6 @@ fetch('/.netlify/functions/proxy', {
     console.error('Erro detalhado:', error);
     displayResults({ error: error.message });
 });
-                
-            });
 
             function validateForm() {
                 const requiredFields = ['artigo', 'gramagem', 'humidade'];
