@@ -1,6 +1,6 @@
-const axios = require('axios');
+const fetch = require('node-fetch');
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsyy8zD8hd3ZoycKgAOrJ9M02O5zmJcXisuaTiy-NQ2c1IrlF9kAE8UaRzdCPaka--/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_CORRECT_SCRIPT_ID/exec';
 
 exports.handler = async function(event, context) {
   console.log('Função proxy iniciada');
@@ -15,22 +15,28 @@ exports.handler = async function(event, context) {
     const body = JSON.parse(event.body);
     console.log('Dados enviados para o Google Apps Script:', body);
     
-    const response = await axios.post(SCRIPT_URL, body);
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {'Content-Type': 'application/json'},
+    });
     
-    console.log('Resposta do Google Apps Script:', response.data);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Resposta do Google Apps Script:', data);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(response.data)
+      body: JSON.stringify(data)
     };
   } catch (error) {
-    console.error('Erro detalhado:', error.response ? error.response.data : error.message);
+    console.error('Erro detalhado:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ 
-        error: 'An error occurred while processing your request', 
-        details: error.response ? error.response.data : error.message 
-      })
+      body: JSON.stringify({ error: 'An error occurred while processing your request: ' + error.message })
     };
   }
 };
