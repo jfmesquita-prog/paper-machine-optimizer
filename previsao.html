@@ -105,37 +105,41 @@
             console.log('Enviando dados:', formData);
 
             fetch('/.netlify/functions/proxy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.text();
-            })
-            .then(text => {
-                console.log('Response text:', text);
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    console.error('Error parsing JSON:', e);
-                    throw new Error('Invalid JSON response: ' + text);
-                }
-            })
-            .then(data => {
-                console.log('Parsed data:', data);
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                displayResults(data);
-            })
-            .catch(error => {
-                console.error('Erro detalhado:', error);
-                displayResults({ error: error.message });
-            });
-        });
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(formData),
+})
+.then(response => {
+    console.log('Status da resposta:', response.status);
+    return response.text();
+})
+.then(text => {
+    console.log('Texto da resposta:', text);
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.error('Erro ao analisar JSON:', e);
+        throw new Error('Resposta inválida do servidor');
+    }
+})
+.then(data => {
+    console.log('Dados parseados:', data);
+    if (data.error) {
+        throw new Error(data.error);
+    }
+    displayResults(data);
+})
+.catch(error => {
+    console.error('Erro detalhado:', error);
+    displayResults({ error: error.message });
+});
+
+function displayResults(data) {
+    console.log('Exibindo resultados:', data);
+    // ... resto da função ...
+}
 
         function validateForm() {
             const requiredFields = ['artigo', 'gramagem', 'humidade'];
