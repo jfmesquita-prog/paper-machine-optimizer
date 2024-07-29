@@ -1,5 +1,4 @@
 const fetch = require('node-fetch');
-
 const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_CORRECT_SCRIPT_ID/exec';
 
 exports.handler = async function(event, context) {
@@ -27,7 +26,6 @@ exports.handler = async function(event, context) {
     
     const data = await response.json();
     console.log('Resposta do Google Apps Script:', data);
-
     return {
       statusCode: 200,
       body: JSON.stringify(data)
