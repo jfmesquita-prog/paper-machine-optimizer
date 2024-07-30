@@ -116,7 +116,7 @@ document.getElementById('shiftForm').addEventListener('submit', function(e) {
                     alert('Erro ao enviar dados. Por favor, tente novamente.');
                 });
             }
-
+document.getElementById('viewDataBtn').addEventListener('click', fetchData);
 function fetchData() {
     console.log('Iniciando fetchData');
     fetch('/.netlify/functions/proxy')
