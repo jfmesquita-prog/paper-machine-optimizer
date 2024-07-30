@@ -117,38 +117,60 @@ document.getElementById('shiftForm').addEventListener('submit', function(e) {
                 });
             }
 
-            function fetchData() {
-                fetch('/.netlify/functions/proxy')
-                    .then(response => response.json())
-                    .then(data => {
-                        const container = document.getElementById('dataContainer');
-                        if (data.length === 0) {
-                            container.innerHTML = '<p>Nenhum dado encontrado.</p>';
-                            return;
-                        }
-                        
-                        let table = '<table border="1"><tr>';
-                        for (let key in data[0]) {
-                            table += `<th>${key}</th>`;
-                        }
-                        table += '</tr>';
-                        
-                        data.forEach(row => {
-                            table += '<tr>';
-                            for (let key in row) {
-                                table += `<td>${row[key]}</td>`;
-                            }
-                            table += '</tr>';
-                        });
-                        
-                        table += '</table>';
-                        container.innerHTML = table;
-                    })
-                    .catch((error) => {
-                        console.error('Erro:', error);
-                        alert('Erro ao recuperar dados. Por favor, tente novamente.');
-                    });
+function fetchData() {
+    console.log('Iniciando fetchData');
+    fetch('/.netlify/functions/proxy')
+        .then(response => {
+            console.log('Resposta bruta:', response);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            return response.text();  // Mudamos para text() em vez de json()
+        })
+        .then(text => {
+            console.log('Texto da resposta:', text);
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('Erro ao fazer parse do JSON:', e);
+                throw new Error('Resposta inválida do servidor');
+            }
+        })
+        .then(data => {
+            console.log('Dados parseados:', data);
+            const container = document.getElementById('dataContainer');
+            if (!Array.isArray(data)) {
+                container.innerHTML = `<p>Formato de dados inesperado. Recebido: ${typeof data}</p>`;
+                return;
+            }
+            if (data.length === 0) {
+                container.innerHTML = '<p>Nenhum dado encontrado.</p>';
+                return;
+            }
+            
+            let table = '<table border="1"><tr>';
+            for (let key in data[0]) {
+                table += `<th>${key}</th>`;
+            }
+            table += '</tr>';
+            
+            data.forEach(row => {
+                table += '<tr>';
+                for (let key in row) {
+                    table += `<td>${row[key]}</td>`;
+                }
+                table += '</tr>';
+            });
+            
+            table += '</table>';
+            container.innerHTML = table;
+        })
+        .catch((error) => {
+            console.error('Erro detalhado:', error);
+            alert('Erro ao recuperar dados. Por favor, verifique o console para mais detalhes.');
+            document.getElementById('dataContainer').innerHTML = `<p>Erro: ${error.message}</p>`;
+        });
+}
         });
     </script>
 </body>
