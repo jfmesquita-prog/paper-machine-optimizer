@@ -11,12 +11,9 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    const body = JSON.parse(event.body);
-    console.log('Dados enviados para o Google Apps Script:', body);
-    
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify(body),
+      body: event.body,
       headers: {'Content-Type': 'application/json'},
     });
     
