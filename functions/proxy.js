@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_CORRECT_SCRIPT_ID/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsyy8zD8hd3ZoycKgAOrJ9M02O5zmJcXisuaTiy-NQ2c1IrlF9kAE8UaRzdCPaka--/exec';
 
 exports.handler = async function(event, context) {
   console.log('Função proxy iniciada');
